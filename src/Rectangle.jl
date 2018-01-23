@@ -11,8 +11,6 @@ export  Rect,
 
 import Base: ==, union, intersect
 
-using Plots
-
 struct Rect{T <: Number}
     m::Matrix{T}
     function Rect{T}(m::Matrix{T}) where {T <: Number}
@@ -20,6 +18,8 @@ struct Rect{T <: Number}
         new(m)
     end
 end
+
+
 
 Rect(lx::T, ly::T, rx::T, ry::T) where {T <: Number} = Rect{T}(Matrix([lx rx; ly ry]))
 
@@ -70,7 +70,7 @@ area(r::Rect) = h(r)*w(r)
 perimeter(r::Rect{T}) where T <: Number = T(2)*(h(r) + w(r))
 
 to_plot_shape(r::Rect{T}) where T <: Number =
-    Plots.Shape([r.lx, r.rx, r.rx, r.lx], [r.ly, r.ly, r.ry, r.ry])
+    ([lx(r), rx(r), rx(r), lx(r)], [ly(r), ly(r), ry(r), ry(r)])
 
 xsort(r1::Rect, r2::Rect, reverse=false) = sortr(r1, r2, reverse=reverse, axis=1)
 ysort(r1::Rect, r2::Rect, reverse=false) = sortr(r1, r2, reverse=reverse, axis=2)

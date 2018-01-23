@@ -31,5 +31,6 @@ using Base.Test
         abs(v[1] - r[1]) < 1e-6 && abs(v[2] - r[2]) < 1e-6
     end
 
+    @test to_plot_shape(Rect(1, 2, 3, 4)) == ([1, 3, 3, 1], [2, 2, 4, 4])
 
 end

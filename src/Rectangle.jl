@@ -7,7 +7,9 @@ export  Rect,
             union, intersect, inside,
             to_plot_shape,
             projectX, projectY,
-            avg_min_dist
+            visibleX, visibleY,
+            has_x_overlap, has_y_overlap,
+            avg_min_dist, min_dist
 
 import Base: ==, union, intersect
 
@@ -19,9 +21,8 @@ struct Rect{T <: Number}
     end
 end
 
-
-
-Rect(lx::T, ly::T, rx::T, ry::T) where {T <: Number} = Rect{T}(Matrix([lx rx; ly ry]))
+Rect(lx::T, ly::T, rx::T, ry::T) where {T <: Number} =
+    Rect{T}(Matrix([min(lx, rx) max(lx, rx); min(ly, ry) max(ly, ry)]))
 
 lb(r) = lb(r.m)
 ru(r) = ru(r.m)
@@ -47,13 +48,14 @@ end
 function intersect(r1::Rect{T}, r2::Rect{T}) where T <: Number
     l = max.(lb(r1), lb(r2))
     r = min.(ru(r1), ru(r2))
-    any(l .> r) && return nothing
+    l1 = l + pcTol(T)
+    any(l1 .>= r) && return nothing
     return Rect(l[1], l[2], r[1], r[2])
 end
 
 pcTol(::Type{T}) where {T <: Integer}  = zero(T)
 pcTol(::Type{T}) where {T <: Rational} = zero(T)
-pcTol(::Type{T}) where {T <: Real}     = T(1e-6)
+pcTol(::Type{T}) where {T <: Real}     = T(1.0e-6)
 
 ==(r1::Rect{T}, r2::Rect{T}) where {T <: Number} = all(abs.(r1.m - r2.m) .<= pcTol(T))
 
@@ -78,6 +80,14 @@ ysort(r1::Rect, r2::Rect, reverse=false) = sortr(r1, r2, reverse=reverse, axis=2
 sortr(r1::Rect, r2::Rect; reverse=false, axis=1) =
     (!reverse && r1.m[axis, 1] > r2.m[axis, 1]) ? (r2, r1) : (r1, r2)
 
+has_x_overlap(r1::Rect, r2::Rect) = has_overlap(r1::Rect, r2::Rect, axis=1)
+has_y_overlap(r1::Rect, r2::Rect) = has_overlap(r1::Rect, r2::Rect, axis=2)
+
+function has_overlap(r1::Rect, r2::Rect; axis=1)
+    r1, r2 = sortr(r1, r2, reverse=false, axis=axis)
+    return r1.m[axis, 1] <= r2.m[axis, 1] <= r1.m[axis, 2]
+end
+
 """
 ```
     projectX(r1::Rect, r2::Rect) -> (left, overlap, right)
@@ -97,9 +107,9 @@ projectX(r1::Rect, r2::Rect) = project(r1, r2, axis=1)
 
 """
 ```
-    projectX(r1::Rect, r2::Rect) -> (bottom, overlap, top)
+    projectY(r1::Rect, r2::Rect) -> (bottom, overlap, top)
 ```
-Projects the rectangles along the X-axis and returns three parts of rectangles.
+Projects the rectangles along the Y-axis and returns three parts of rectangles.
 
 `bottom`: The bottom segment of the projection
 `overlap`: If there is any overlap between the rectangles
@@ -154,6 +164,30 @@ function project(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T
     return low, overlap, high
 end
 
+"""
+```
+    visibleX(r1::Rect, r2::Rect) -> Rect
+    visibleY(r1::Rect, r2::Rect) -> Rect
+```
+Projects the rectangles along the X-axis (Y-axis) and returns a rectangle area which is
+completely visible from both rectangles.
+
+`nothing` is returned when there is no overlap along the X-axis.
+"""
+visibleX(r1::Rect, r2::Rect) = visible(r1::Rect, r2::Rect, axis=1)
+visibleY(r1::Rect, r2::Rect) = visible(r1::Rect, r2::Rect, axis=2)
+
+function visible(r1::Rect{T}, r2::Rect{T}; axis=1) where {T}
+    l, ox, r = project(r1, r2, axis=axis)
+    ox == (nothing, nothing) && return nothing
+    saxis = (axis == 1? 2:1)
+    tr1, tr2 = sortr(ox[1], ox[2], axis=saxis)
+    tr1.m[saxis, 1] = tr1.m[saxis, 2]
+    tr1.m[saxis, 2] + pcTol(T) > tr2.m[saxis, 1] && return nothing
+    tr1.m[saxis, 2] = tr2.m[saxis, 1]
+    return tr1
+end
+
 function get_overlapped_dist(l, h, f, a1, a2)
     # l = low and h = high
     lr, adl = l[1] == nothing ? (l[2], a2) : (l[1], a1)
@@ -199,6 +233,25 @@ function avg_min_dist(r1::Rect, r2::Rect)
     ox != (nothing, nothing) && return get_overlapped_dist(l, r, w, a1, a2), dy
     b, oy, t = projectY(r1, r2)
     oy != (nothing, nothing) && return dx, get_overlapped_dist(b, t, h, a1, a2)
+    return dx, dy
+end
+
+"""
+```
+    min_dist(r1::Rect{T}, r2::Rect{T}) -> dx::T, dy::T
+```
+Minimum distance or gap between two rectangles.
+
+`dx`: The distance in the x-direction
+`dy`: The distance in the y-direction
+
+The minimum distance will be `zero` when the rectangles are overlapping in a direction.
+"""
+function min_dist(r1::Rect{T}, r2::Rect{T}) where {T}
+    r1, r2 = xsort(r1, r2)
+    dx = has_x_overlap(r1, r2) ? zero(T) : lx(r2) - rx(r1)
+    r1, r2 = ysort(r1, r2)
+    dy = has_y_overlap(r1, r2) ? zero(T) : ly(r2) - ry(r1)
     return dx, dy
 end
 

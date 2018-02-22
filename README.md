@@ -21,10 +21,16 @@ those are given emphasis. Currently the following methods are available.
 * `to_plot_shape(r)` - `Shape` object to be used in `Plots` library.
 * `projectX(r1, r2)` - Find overlap regions when projected onto X-axis.
 * `projectY(r1, r2)` - Find overlap regions when projected onto Y-axis
+* `visibleX(r1, r2)`, `visibleY(r1, r2)` - Projects the rectangles along the X-axis
+(Y-axis) and returns a rectangle area which is completely visible from both rectangles.
+* `has_x_overlap(r1, r2)`, `has_y_overlap(r1, r2)` - If rectangles have overlap along the
+x-direction (y-direction).
 * `avg_min_dist(r1, r2)` - Rectangles are essentially point sets. Hence, one can
 perceive existence of a minimum distance of one point in `r1` from `r2`. Similar, distance
 would also exist for every point in `r2` from `r1`.
+* `min_dist(r1, r2)` - The gap between two rectangular regions. If there is overlap along a
+specific direction 0 will be returned
 
 ## Contribution
 
-Pull Requests and Issues are ways to submit changes and enhancements. 
+Pull Requests and Issues are ways to submit changes and enhancements.

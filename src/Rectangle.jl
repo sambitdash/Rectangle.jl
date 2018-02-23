@@ -11,7 +11,7 @@ export  Rect,
             has_x_overlap, has_y_overlap,
             avg_min_dist, min_dist
 
-import Base: ==, union, intersect
+import Base: ==, union, intersect, promote_rule, convert
 
 struct Rect{T <: Number}
     m::Matrix{T}
@@ -23,7 +23,16 @@ struct Rect{T <: Number}
         new(Matrix([min(lx, rx) max(lx, rx); min(ly, ry) max(ly, ry)]))
 end
 
-Rect(lx::T, ly::T, rx::T, ry::T) where {T <: Number} = Rect{T}(lx, ly, rx, ry)
+function Rect(lx::Number, ly::Number, rx::Number, ry::Number)
+    t = promote(lx, ly, rx, ry)
+    return Rect{typeof(t[1])}(t...)
+end
+
+convert(::Type{Rect{T}}, r::Rect{S}) where {T <: Number, S <: Number} =
+    Rect{T}(Matrix{T}(r.m))
+
+promote_rule(::Type{Rect{T}}, ::Type{Rect{S}}) where {T <: Number, S <: Number} =
+    Rect{promote_type(T, S)}
 
 lb(r) = lb(r.m)
 ru(r) = ru(r.m)
@@ -46,6 +55,8 @@ function union(r1::Rect, r2::Rect)
     return Rect(l[1], l[2], r[1], r[2])
 end
 
+intersect(r1::Rect, r2::Rect) = intersect(promote(r1, r2)...)
+
 function intersect(r1::Rect{T}, r2::Rect{T}) where T <: Number
     l = max.(lb(r1), lb(r2))
     r = min.(ru(r1), ru(r2))
@@ -54,26 +65,23 @@ function intersect(r1::Rect{T}, r2::Rect{T}) where T <: Number
     return Rect(l[1], l[2], r[1], r[2])
 end
 
-pcTol(::Type{T}) where {T <: Integer}  = zero(T)
-pcTol(::Type{T}) where {T <: Rational} = zero(T)
-pcTol(::Type{T}) where {T <: Real}     = T(1.0e-6)
+pcTol(::Type{T}) where {T <: Integer}       = zero(T)
+pcTol(::Type{T}) where {T <: Rational}      = zero(T)
+pcTol(::Type{T}) where {T <: AbstractFloat} = T(1.0e-6)
 
 ==(r1::Rect{T}, r2::Rect{T}) where {T <: Number} = all(abs.(r1.m - r2.m) .<= pcTol(T))
+==(r1::Rect, r2::Rect) = ==(promote(r1, r2)...)
 
 inside(p::Tuple{T, T}, r::Rect{T}) where T <: Number = all(r.m[:, 1] .<= p .<= r.m[:, 2])
 
 inside(ri::Rect, ro::Rect) = intersect(ri, ro) == ri
 
 h(r::Rect) = ry(r) - ly(r)
-
 w(r::Rect) = rx(r) - lx(r)
+area(r::Rect) = h(r) * w(r)
 
-area(r::Rect) = h(r)*w(r)
-
-perimeter(r::Rect{T}) where T <: Number = T(2)*(h(r) + w(r))
-
-to_plot_shape(r::Rect{T}) where T <: Number =
-    ([lx(r), rx(r), rx(r), lx(r)], [ly(r), ly(r), ry(r), ry(r)])
+perimeter(r::Rect) =  (s = h(r) + w(r); s + s)
+to_plot_shape(r::Rect) = ([lx(r), rx(r), rx(r), lx(r)], [ly(r), ly(r), ry(r), ry(r)])
 
 xsort(r1::Rect, r2::Rect, reverse=false) = sortr(r1, r2, reverse=reverse, axis=1)
 ysort(r1::Rect, r2::Rect, reverse=false) = sortr(r1, r2, reverse=reverse, axis=2)
@@ -123,7 +131,8 @@ tuple. `nothing` is returned for a part when a portion is not available.
 """
 projectY(r1::Rect, r2::Rect) = project(r1, r2, axis=2)
 
-function project(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T
+project(r1::Rect, r2::Rect; axis::Int=1) = project(promote(r1, r2)...; axis=axis)
+function project(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T <: Number
     # l=low and h=high
     lr, hr = sortr(r1, r2, axis=axis)
     flip = lr != r1
@@ -178,7 +187,9 @@ completely visible from both rectangles.
 visibleX(r1::Rect, r2::Rect) = visible(r1::Rect, r2::Rect, axis=1)
 visibleY(r1::Rect, r2::Rect) = visible(r1::Rect, r2::Rect, axis=2)
 
-function visible(r1::Rect{T}, r2::Rect{T}; axis=1) where {T}
+visible(r1::Rect, r2::Rect; axis::Int=1) = visible(promote(r1, r2)...; axis=axis)
+
+function visible(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T <: Number
     l, ox, r = project(r1, r2, axis=axis)
     ox == (nothing, nothing) && return nothing
     saxis = (axis == 1? 2:1)
@@ -239,7 +250,7 @@ end
 
 """
 ```
-    min_dist(r1::Rect{T}, r2::Rect{T}) -> dx::T, dy::T
+    min_dist(r1::Rect, r2::Rect) -> dx, dy
 ```
 Minimum distance or gap between two rectangles.
 
@@ -248,12 +259,13 @@ Minimum distance or gap between two rectangles.
 
 The minimum distance will be `zero` when the rectangles are overlapping in a direction.
 """
-function min_dist(r1::Rect{T}, r2::Rect{T}) where {T}
+function min_dist(r1::Rect{T}, r2::Rect{T}) where T <: Number
     r1, r2 = xsort(r1, r2)
     dx = has_x_overlap(r1, r2) ? zero(T) : lx(r2) - rx(r1)
     r1, r2 = ysort(r1, r2)
     dy = has_y_overlap(r1, r2) ? zero(T) : ly(r2) - ry(r1)
     return dx, dy
 end
+min_dist(r1::Rect, r2::Rect) = min_dist(promote(r1, r2)...)
 
 end # module

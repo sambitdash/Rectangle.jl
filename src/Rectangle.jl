@@ -19,10 +19,11 @@ struct Rect{T <: Number}
         @assert size(m) == (2,2) && all(lb(m) .< ru(m)) "Invalid values."
         new(m)
     end
+    Rect{T}(lx::T, ly::T, rx::T, ry::T) where {T <: Number} =
+        new(Matrix([min(lx, rx) max(lx, rx); min(ly, ry) max(ly, ry)]))
 end
 
-Rect(lx::T, ly::T, rx::T, ry::T) where {T <: Number} =
-    Rect{T}(Matrix([min(lx, rx) max(lx, rx); min(ly, ry) max(ly, ry)]))
+Rect(lx::T, ly::T, rx::T, ry::T) where {T <: Number} = Rect{T}(lx, ly, rx, ry)
 
 lb(r) = lb(r.m)
 ru(r) = ru(r.m)

@@ -29,7 +29,13 @@ x-direction (y-direction).
 perceive existence of a minimum distance of one point in `r1` from `r2`. Similar, distance
 would also exist for every point in `r2` from `r1`.
 * `min_dist(r1, r2)` - The gap between two rectangular regions. If there is overlap along a
-specific direction 0 will be returned
+specific direction 0 will be returned.
+* `create_ordered_map(rects, values; dir=1)` - Ordered list of rectangles and associate data values. `dir=1` orders the rectangles by `x-axis` first and `2` by `y-axis`.
+* `intersect(ordered_rect_map, rect)` - Return all the values for rectangles that intersect
+with `rect`.
+* `insert_rect!(ordered_rect_map, rect, value)` - Insert value associated with the `rect`.
+* `delete_rect!(ordered_rect_map, rect)` - Delete associated value for the `rect`. Returns
+the associated value.
 
 ## Contribution
 

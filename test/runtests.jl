@@ -14,6 +14,9 @@ using Base.Test
     @test area(Rect(0, 0, 1, 10))      == 10
     @test perimeter(Rect(0, 0, 1//2, 1)) == 3
 
+    @test x(Rect(0, 5, 10, 10)) == [0, 10]
+    @test y(Rect(0, 5, 10, 10)) == [5, 10]
+
     @test  has_x_overlap(Rect(0.0, 0.0, 10.0, 1.0), Rect(3.0, 2.0, 11.0, 4.0))
     @test !has_y_overlap(Rect(0.0, 0.0, 10.0, 1.0), Rect(3.0, 2.0, 11.0, 4.0))
 
@@ -25,7 +28,7 @@ using Base.Test
     @test visibleY(Rect(0.0, 0.0, 10.0, 1.0), Rect(3.0, 2.0, 11.0, 4.0)) ==
             nothing
 
-    @test visibleY(Rect(0.0, 0.0, 1.0, 10.0), Rect(2.0, 3.0, 4.0, 11.0)) ==
+    @test visibleY(Rect(0.0, 0.0, 1.0, 10.0), Rect(2, 3, 4, 11)) ==
         Rect(1.0, 3.0, 2.0, 10.0)
     @test visibleX(Rect(0.0, 0.0, 1.0, 10.0), Rect(2.0, 3.0, 4.0, 11.0)) ==
         nothing
@@ -48,9 +51,24 @@ using Base.Test
         abs(v[1] - r[1]) < 1e-6 && abs(v[2] - r[2]) < 1e-6
     end
 
-    @test min_dist(Rect(0,0,10,10), Rect(0,15,15,20)) == (0, 5)
+    @test begin
+        r = (0, 5)
+        v = min_dist(Rect(0,0,10,10.0), Rect(0,15,15,20))
+        abs(v[1] - r[1]) < 1e-6 && abs(v[2] - r[2]) < 1e-6
+    end
     @test min_dist(Rect(0,0,10,10), Rect(11,15,15,20)) == (1, 5)
 
     @test to_plot_shape(Rect(1, 2, 3, 4)) == ([1, 3, 3, 1], [2, 2, 4, 4])
 
+    rects = [Rect(0, 20*i, 100, 10 + 20*i) for i = 1:10]
+    is = [i for i=1:10]
+    ormy = create_ordered_map(rects, is, dir=2)
+    v = insert_rect!(ormy, Rect(0, 20, 100, 30), 11)
+    @test delete_rect!(ormy, Rect(0, 20, 100, 30)) == 11
+    @test intersect(ormy, Rect(0, 0, 110, 55)) == [(Rect(0, 40, 100, 50), 2)]
+
+    ormx = create_ordered_map(rects, is, dir=1)
+    v = insert_rect!(ormx, Rect(0, 20, 100, 30), 11)
+    @test delete_rect!(ormx, Rect(0, 20, 100, 30)) == 11
+    @test intersect(ormx, Rect(0, 0, 110, 55)) == [(Rect(0, 40, 100, 50), 2)]
 end

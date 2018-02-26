@@ -3,13 +3,17 @@ __precompile__()
 module Rectangle
 
 export  Rect,
-            w, h, area, perimeter,
+            x, y, lx, ly, rx, ry, w, h, area, perimeter,
             union, intersect, inside,
             to_plot_shape,
             projectX, projectY,
             visibleX, visibleY,
             has_x_overlap, has_y_overlap,
-            avg_min_dist, min_dist
+            avg_min_dist, min_dist,
+        OrderedRectMapX, OrderedRectMapY,
+            create_ordered_map, get_intersect_data, insert_rect!, delete_rect!
+
+using IntervalTrees
 
 import Base: ==, union, intersect, promote_rule, convert
 
@@ -267,5 +271,87 @@ function min_dist(r1::Rect{T}, r2::Rect{T}) where T <: Number
     return dx, dy
 end
 min_dist(r1::Rect, r2::Rect) = min_dist(promote(r1, r2)...)
+
+mutable struct OrderedRectMap{T <: Number, V, D}
+    data::IntervalMap{T, IntervalMap{T, V}}
+    OrderedRectMap{T, V, D}() where {T <: Number, V, D} =
+        new(IntervalMap{T, IntervalMap{T, V}}())
+end
+
+const OrderedRectMapX{T, V} = OrderedRectMap{T, V, dir=1}
+const OrderedRectMapY{T, V} = OrderedRectMap{T, V, dir=2}
+
+function create_ordered_map(rects::AbstractVector{Rect{T}}, values::AbstractVector{V}; dir::Int=1) where {T <: Number, V}
+    map = OrderedRectMap{T, V, dir}()
+    itr = start(rects)
+    itv = start(values)
+    odir = dir == 1? 2 : 1
+    while !done(rects, itr)
+        (rect, itr) = next(rects,  itr)
+        (v2,   itv) = next(values, itv)
+        insert_rect!(map, rect, v2)
+    end
+    return map
+end
+
+function intersect(orm::OrderedRectMap{T1, V, D},
+    r::Rect{T2}) where {T1 <: Number, T2 <: Number, V, D}
+    rect = convert(Rect{T1}, r)
+    dir = D
+    odir = dir == 1? 2 : 1
+    r1 = coord(rect, dir)
+    r2 = coord(rect, odir)
+    imv1 = intersect(orm.data, (r1[1], r1[2]))
+    iv1 = start(imv1)
+    ret = Vector{Tuple{Rect{T1}, V}}()
+    while !done(imv1, iv1)
+        v1, iv1 = next(imv1, iv1)
+        imv2 = intersect(v1.value, (r2[1], r2[2]))
+        iv2 = start(imv2)
+        while !done(imv2, iv2)
+            v2, iv2 = next(imv2, iv2)
+            m = zeros(T1, (2,2))
+            m[ dir, 1], m[ dir, 2] = v1.first, v1.last
+            m[odir, 1], m[odir, 2] = v2.first, v2.last
+            push!(ret, (Rect{T1}(m), v2.value))
+        end
+    end
+    return ret
+end
+
+function insert_rect!(orm::OrderedRectMap{T1, V, D},
+    r::Rect{T2}, v::V) where {T1 <: Number, T2 <: Number, V, D}
+    rect = convert(Rect{T1}, r)
+    dir = D
+    odir = dir == 1? 2 : 1
+    r1 = coord(rect, dir)
+    r2 = coord(rect, odir)
+    imv = get(orm.data, (r1[1], r1[2]), nothing)
+    ret = nothing
+    if imv != nothing
+        ret = get(imv.value, (r2[1], r2[2]), nothing)
+        imv.value[(r2[1], r2[2])] = v
+    else
+        imv = IntervalMap{T1, V}()
+        imv[(r2[1], r2[2])] = v
+        orm.data[(r1[1], r1[2])] = imv
+    end
+    return ret
+end
+
+function delete_rect!(orm::OrderedRectMap{T1, V, D},
+    r::Rect{T2}) where {T1 <: Number, T2 <: Number, V, D}
+    rect = convert(Rect{T1}, r)
+    dir = D
+    odir = dir == 1? 2 : 1
+    r1 = coord(rect, dir)
+    r2 = coord(rect, odir)
+    imv = get(orm.data, (r1[1], r1[2]), nothing)
+    imv == nothing && return nothing
+    ret = get(imv.value, (r2[1], r2[2]), nothing)
+    delete!(imv.value, (r2[1], r2[2]))
+    isempty(imv.value) && delete!(orm.data, (r1[1], r1[2]))
+    return ret == nothing ? ret : ret.value
+end
 
 end # module

@@ -72,3 +72,16 @@ using Base.Test
     @test delete_rect!(ormx, Rect(0, 20, 100, 30)) == 11
     @test intersect(ormx, Rect(0, 0, 110, 55)) == [(Rect(0, 40, 100, 50), 2)]
 end
+
+@testset "Line" begin
+    @test isHorizontal(Line(0.0, 0, 10, 0))
+    @test !isHorizontal(Line(0.0, 0, 10, 1)) 
+    @test isVertical(Line(10, 0, 10, 10))
+    @test !isVertical(Line(10, 0, 11.0, 10.0))
+    @test parallelogram_area([0 0; 10 0; 0 20]') == 200
+    @test length(Line(0, 0, 3, 4)) == 5.0
+    @test ratio(Line(0, 0, 5, 10.0), [1, 2]) == 0.2
+    @test intersects(Line(0, 0, 10, 10), Line(10, 0, 0.0, 10))
+    @test intersects(Line(0, 0, 10, 10), Line(5, 5, 0.0, 10))
+    @test !intersects(Line(0, 0, 4, 4), Line(5, 5, 0.0, 10))
+end

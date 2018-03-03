@@ -146,7 +146,7 @@ function project(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T <: Number
 
     overlap = Rect{T}(om1), Rect{T}(om2)
 
-    #Right segment
+    #High segment
     if -pcTol(T) <= c_hi(r1, axis) - c_hi(r2, axis) <= pcTol(T)
         high = nothing, nothing
     else

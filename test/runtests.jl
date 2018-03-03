@@ -52,6 +52,25 @@ using Base.Test
     end
 
     @test begin
+        r = (0.0, 9.166666666666668)
+        v = avg_min_dist(Rect(0,0,10,10), Rect(0,15,10,20))
+        abs(v[1] - r[1]) < 1e-6 && abs(v[2] - r[2]) < 1e-6
+    end
+
+    @test begin
+        v = projectX(Rect(0,0,10,10), Rect(0,15.0,10,20))
+        @assert v[1] == (nothing, nothing)
+        @assert v[2] == (Rect(0.0,0.0,10.0,10.0), Rect(0.0,15.0,10.0,20.0))
+        v[3] == (nothing, nothing)
+    end
+
+    @test begin
+        r = (7.0, 7.0)
+        v = avg_min_dist(Rect(0,0,6,6), Rect(10,10,16,16))
+        abs(v[1] - r[1]) < 1e-6 && abs(v[2] - r[2]) < 1e-6
+    end
+                                                               
+    @test begin
         r = (0, 5)
         v = min_dist(Rect(0,0,10,10.0), Rect(0,15,15,20))
         abs(v[1] - r[1]) < 1e-6 && abs(v[2] - r[2]) < 1e-6

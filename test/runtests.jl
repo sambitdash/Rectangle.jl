@@ -87,4 +87,5 @@ end
     @test intersects(Line(0, 0, 10, 10), Line(10, 0, 0.0, 10))
     @test intersects(Line(0, 0, 10, 10), Line(5, 5, 0.0, 10))
     @test !intersects(Line(0, 0, 4, 4), Line(5, 5, 0.0, 10))
+    @test !intersects(Line(0, 0, 4, 4), Line(10, 0, 0.0, 10))
 end

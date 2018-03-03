@@ -55,7 +55,7 @@ function ratio(l::Line{T}, p::Vector{T}) where {T <: Real}
         tp = dv[2]*r + l.m[2, 1]
         -pcTol(T) <= tp - dp[2] <= pcTol(T) && return r
     else
-        return r
+        -pcTol(T) <= dp[1] <= pcTol(T) && return r
     end
     return nothing
 end

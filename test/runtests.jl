@@ -81,6 +81,9 @@ end
     @test parallelogram_area([0 0; 10 0; 0 20]') == 200
     @test length(Line(0, 0, 3, 4)) == 5.0
     @test ratio(Line(0, 0, 5, 10.0), [1, 2]) == 0.2
+    @test ratio(Line(0, 0, 5, 10.0), [2, 3]) == nothing
+    @test ratio(Line(0.0, 0, 0, 10), [0, 5]) == 0.5
+    @test ratio(Line(0.0, 0, 0, 10), [1, 5]) == nothing
     @test intersects(Line(0, 0, 10, 10), Line(10, 0, 0.0, 10))
     @test intersects(Line(0, 0, 10, 10), Line(5, 5, 0.0, 10))
     @test !intersects(Line(0, 0, 4, 4), Line(5, 5, 0.0, 10))

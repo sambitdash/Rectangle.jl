@@ -12,6 +12,8 @@ struct Rect{T <: Number}
         new(Matrix([min(lx, rx) max(lx, rx); min(ly, ry) max(ly, ry)]))
 end
 
+Rect(m::Matrix{T}) where {T <: Number} = Rect{T}(m)
+
 function Rect(lx::Number, ly::Number, rx::Number, ry::Number)
     t = promote(lx, ly, rx, ry)
     return Rect{typeof(t[1])}(t...)

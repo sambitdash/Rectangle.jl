@@ -14,7 +14,9 @@ export  Line,
             has_x_overlap, has_y_overlap,
             avg_min_dist, min_dist,
         OrderedRectMapX, OrderedRectMapY,
-            create_ordered_map, get_intersect_data, insert_rect!, delete_rect!
+            create_ordered_map, get_intersect_data, insert_rect!, delete_rect!,
+        pcTol
+
 
 include("utils.jl")
 include("Line.jl")

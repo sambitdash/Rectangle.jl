@@ -1,4 +1,4 @@
-import Base: convert, promote_rule, length
+import Base: ==, convert, promote_rule, length
 
 struct Line{T <: Number}
     m::Matrix{T}
@@ -8,6 +8,8 @@ struct Line{T <: Number}
     end
     Line{T}(lx::T, ly::T, rx::T, ry::T) where {T <: Number} = new(Matrix([lx rx; ly ry]))
 end
+
+Line(m::Matrix{T}) where {T <: Number} = Line{T}(m)
 
 function Line(lx::Number, ly::Number, rx::Number, ry::Number)
     t = promote(lx, ly, rx, ry)
@@ -19,6 +21,10 @@ convert(::Type{Line{T}}, r::Line{S}) where {T <: Number, S <: Number} =
 
 promote_rule(::Type{Line{T}}, ::Type{Line{S}}) where {T <: Number, S <: Number} =
     Line{promote_type(T, S)}
+
+==(l1::Line{T}, l2::Line{T}) where {T <: Number} = all(abs.(l1.m - l2.m) .<= pcTol(T))
+==(r1::Line, r2::Line) = ==(promote(l1, l2)...)
+
 
 axis_parallel(l::Line{T}; dir::Int=1) where {T <: Number} =
     -pcTol(T) <= l.m[dir, 1] - l.m[dir, 2] <= pcTol(T)

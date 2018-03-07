@@ -94,7 +94,7 @@ using Base.Test
 end
 
 @testset "Line" begin
-    @test Line([0 10; 0 10]) == Line(0, 0, 10, 10)
+    @test Line([0 10; 0 10]) == Line(0.0, 0, 10, 10)
     @test isHorizontal(Line(0.0, 0, 10, 0))
     @test !isHorizontal(Line(0.0, 0, 10, 1)) 
     @test isVertical(Line(10, 0, 10, 10))

@@ -23,7 +23,7 @@ promote_rule(::Type{Line{T}}, ::Type{Line{S}}) where {T <: Number, S <: Number} 
     Line{promote_type(T, S)}
 
 ==(l1::Line{T}, l2::Line{T}) where {T <: Number} = all(abs.(l1.m - l2.m) .<= pcTol(T))
-==(r1::Line, r2::Line) = ==(promote(l1, l2)...)
+==(l1::Line, l2::Line) = ==(promote(l1, l2)...)
 
 
 axis_parallel(l::Line{T}; dir::Int=1) where {T <: Number} =

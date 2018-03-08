@@ -85,12 +85,12 @@ using Base.Test
     ormy = create_ordered_map(rects, is, dir=2)
     v = insert_rect!(ormy, Rect(0, 20, 100, 30), 11)
     @test delete_rect!(ormy, Rect(0, 20, 100, 30)) == 11
-    @test intersect(ormy, Rect(0, 0, 110, 55)) == [(Rect(0, 40, 100, 50), 2)]
+    @test intersect(ormy, Rect(0, 0, 110, 55)) == ([Rect(0, 40, 100, 50)], [2])
 
     ormx = create_ordered_map(rects, is, dir=1)
     v = insert_rect!(ormx, Rect(0, 20, 100, 30), 11)
     @test delete_rect!(ormx, Rect(0, 20, 100, 30)) == 11
-    @test intersect(ormx, Rect(0, 0, 110, 55)) == [(Rect(0, 40, 100, 50), 2)]
+    @test intersect(ormx, Rect(0, 0, 110, 55)) == ([Rect(0, 40, 100, 50)], [2])
 
     @test hlines(Rect(0, 0, 10, 10)) == (Line(0, 0, 10, 0), Line(0, 10, 10, 10))
     @test vlines(Rect(0, 0, 10, 10)) == (Line(0, 0, 0, 10), Line(10, 0, 10, 10))

@@ -306,7 +306,8 @@ function intersect(orm::OrderedRectMap{T1, V, D},
     r2 = coord(rect, odir)
     imv1 = intersect(orm.data, (r1[1], r1[2]))
     iv1 = start(imv1)
-    ret = Vector{Tuple{Rect{T1}, V}}()
+    retr = Vector{Rect{T1}}()
+    retv = Vector{V}()
     while !done(imv1, iv1)
         v1, iv1 = next(imv1, iv1)
         imv2 = intersect(v1.value, (r2[1], r2[2]))
@@ -316,10 +317,11 @@ function intersect(orm::OrderedRectMap{T1, V, D},
             m = zeros(T1, (2,2))
             m[ dir, 1], m[ dir, 2] = v1.first, v1.last
             m[odir, 1], m[odir, 2] = v2.first, v2.last
-            push!(ret, (Rect{T1}(m), v2.value))
+            push!(retr, Rect{T1}(m))
+            push!(retv, v2.value)
         end
     end
-    return ret
+    return retr, retv
 end
 
 function insert_rect!(orm::OrderedRectMap{T1, V, D},

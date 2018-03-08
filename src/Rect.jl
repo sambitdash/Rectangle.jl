@@ -40,6 +40,11 @@ y(r) = coord(r, 2)
 c_lo(r, axis)   = r.m[axis, 1]
 c_hi(r, axis)   = r.m[axis, 2]
 
+hlines(r::Rect) = (Line(lx(r), ly(r), rx(r), ly(r)), Line(lx(r), ry(r), rx(r), ry(r)))
+vlines(r::Rect) = (Line(lx(r), ly(r), lx(r), ry(r)), Line(rx(r), ly(r), rx(r), ry(r)))
+lines(r::Rect) = [hlines(r)..., vlines(r)...]
+olines(r::Rect) = (ls = lines(r); [ls[1], ls[4], reverse(ls[2]), reverse(ls[3])])
+
 function union(r1::Rect, r2::Rect)
     l = min.(lb(r1), lb(r2))
     r = max.(ru(r1), ru(r2))
@@ -61,7 +66,20 @@ end
 
 inside(p::Tuple{T, T}, r::Rect{T}) where T <: Number = all(r.m[:, 1] .<= p .<= r.m[:, 2])
 
+inside(p::Tuple{T, T}, r::Rect{S}) where {T <: Number, S <: Number} =
+    (ST = promote_type(S, T); inside(convert(Tuple{ST, ST}, p), convert(Rect{ST}, r)))
+
 inside(ri::Rect, ro::Rect) = intersect(ri, ro) == ri
+
+function intersects(r::Rect, l::Line)
+    ml = l.m
+    (inside((ml[1, 1], ml[2, 1]), r) || inside((ml[1, 2], ml[2, 2]), r)) && return true
+    for tl in lines(r)
+        intersects(tl, l) && return true
+    end
+    return false
+end
+
 
 h(r::Rect) = ry(r) - ly(r)
 w(r::Rect) = rx(r) - lx(r)
@@ -336,5 +354,3 @@ function delete_rect!(orm::OrderedRectMap{T1, V, D},
     isempty(imv.value) && delete!(orm.data, (r1[1], r1[2]))
     return ret == nothing ? ret : ret.value
 end
-
-

@@ -1,6 +1,10 @@
+import Base: iszero
+
 pcTol(::Type{T}) where {T <: Integer}       = zero(T)
 pcTol(::Type{T}) where {T <: Rational}      = zero(T)
 pcTol(::Type{T}) where {T <: AbstractFloat} = T(1.0e-6)
+
+iszero(n::T) where {T <: Number} = -pcTol(T) <= n <= pcTol(T)
 
 """
 ```

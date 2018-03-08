@@ -16,8 +16,14 @@ those are given emphasis. Currently the following methods are available.
 * `h(r)` - Height
 * `area(r)` - Area
 * `perimeter(r)` - Perimeter
+* Lines methods for rectangle ABCD
+  * `vlines(r)` - returns line segments (AB, DC)
+  * `hlines(r)` - returns line segments (AD, BC)
+  * `lines(r)`  - returns line segments [AB, DC, AD, BC]
+  * `olines(r)` - returns line segments [AB, BC, CD, DA]
 * `union(r1, r2)` - Union of two rectangles resulting in a larger rectangle.
 * `intersect(r1, r2)` - Intersection of two rectangles.
+* `intersects(r, l)` - If rectangle `r` and line `l` intersect each other.
 * `inside(p, r)` - Point `p` is inside rectangle `r`
 * `inside(ri, ro)` - Rectangle `ri` is fully enclosed in `ro`
 * `to_plot_shape(r)` - `Shape` object to be used in `Plots` library.
@@ -46,6 +52,7 @@ the associated value.
 * `Line` - Representation of a line in 2-D.
 * `isHorizontal(l)`, `isVertical(l)` - Returns if the line are horizontal or vertical
 * `length(l)` - Length of the line
+* `reverse(l)` - for a line AB returns line BA.
 * `parallelogram_area(l, p)` - The area formed by the parallelogram formed by the line and
 a point.
 * `ratio(l,p)` - if point `p` lies on line `l`, then it will divide the line at a ratio 

@@ -1,4 +1,4 @@
-import Base: ==, convert, promote_rule, length
+import Base: ==, convert, promote_rule, length, reverse
 
 struct Line{T <: Number}
     m::Matrix{T}
@@ -22,12 +22,17 @@ convert(::Type{Line{T}}, r::Line{S}) where {T <: Number, S <: Number} =
 promote_rule(::Type{Line{T}}, ::Type{Line{S}}) where {T <: Number, S <: Number} =
     Line{promote_type(T, S)}
 
-==(l1::Line{T}, l2::Line{T}) where {T <: Number} = all(abs.(l1.m - l2.m) .<= pcTol(T))
+==(l1::Line{T}, l2::Line{T}) where {T <: Number} = all(iszero.(l1.m - l2.m))
 ==(l1::Line, l2::Line) = ==(promote(l1, l2)...)
 
+function reverse(l::Line)
+    m = copy(l.m)
+    m[:, 1], m[:, 2] = m[:, 2], m[:, 1]
+    return Line(m)
+end
 
 axis_parallel(l::Line{T}; dir::Int=1) where {T <: Number} =
-    -pcTol(T) <= l.m[dir, 1] - l.m[dir, 2] <= pcTol(T)
+    iszero(l.m[dir, 1] - l.m[dir, 2])
 
 """
 ```
@@ -56,20 +61,18 @@ If `p` is on `l1` it divides the line at ratio `r:(1-r)` else nothing.
 function ratio(l::Line{T}, p::Vector{T}) where {T <: Real}
     dv = l.m[:, 2] - l.m[:, 1]
     dp = p - l.m[:, 1]
-    r, c = dv[1] > pcTol(T) || dv[1] < -pcTol(T) ? (dp[1] / dv[1], 1) : (dp[2] / dv[2], 2)
+    r, c = !iszero(dv[1]) ? (dp[1] / dv[1], 1) : (dp[2] / dv[2], 2)
     if c == 1
         tp = dv[2]*r + l.m[2, 1]
-        -pcTol(T) <= tp - dp[2] <= pcTol(T) && return r
+        iszero(tp - p[2]) && return r
     else
-        -pcTol(T) <= dp[1] <= pcTol(T) && return r
+        iszero(dp[1]) && return r
     end
     return nothing
 end
 
-function ratio(l::Line{T}, p::Vector{S}) where {T <: Number, S <: Number}
-    l, p = (promote_type(S, T) == T) ? (l, convert(Vector{T}, p)) : (convert(Line{T}, l), p)
-    return ratio(l, p)
-end
+ratio(l::Line{T}, p::Vector{S}) where {T <: Number, S <: Number} = 
+    (ST = promote_type(S, T); ratio(convert(Line{ST}, l), convert(Vector{ST}, p)))
 
 """
 ```
@@ -84,7 +87,7 @@ function intersects(l1::Line{T}, l2::Line{T}) where {T <: Real}
 
     for i = 1:2
         for j = 1:2 
-            if t[i, j] == zero(T)
+            if iszero(t[i, j])
                 r = ratio(l[i, 1], l[i, 2].m[:, j])
                 return zero(T) <= r <= one(T)
             end
@@ -95,3 +98,4 @@ function intersects(l1::Line{T}, l2::Line{T}) where {T <: Real}
 end
 
 intersects(l1::Line, l2::Line) = intersects(promote(l1, l2)...)
+

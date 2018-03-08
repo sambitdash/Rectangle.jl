@@ -71,6 +71,8 @@ inside(p::Tuple{T, T}, r::Rect{S}) where {T <: Number, S <: Number} =
 
 inside(ri::Rect, ro::Rect) = intersect(ri, ro) == ri
 
+intersects(r1::Rect, r2::Rect) = intersect(r1, r2) != nothing
+
 function intersects(r::Rect, l::Line)
     ml = l.m
     (inside((ml[1, 1], ml[2, 1]), r) || inside((ml[1, 2], ml[2, 2]), r)) && return true

@@ -98,6 +98,7 @@ using Base.Test
                                         Line(0, 0, 0, 10), Line(10, 0, 10, 10)] 
     @test olines(Rect(0, 0, 10, 10)) == [Line(0, 0, 10, 0), Line(10, 0, 10, 10),
                                          Line(10, 10, 0, 10), Line(0, 10, 0, 0)]
+    @test intersects(Rect(0, 0, 10, 10), Rect(5, 5, 15, 15))
     @test intersects(Rect(0, 0, 10, 10.0), Line(-1, -1, 11.0, 11))
     @test intersects(Rect(0, 0, 10, 10), Line(5, -5, 11, 11))
     @test !intersects(Rect(0, 0, 10, 10), Line(11, 0, 11, 11))

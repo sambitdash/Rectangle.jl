@@ -23,6 +23,7 @@ those are given emphasis. Currently the following methods are available.
   * `olines(r)` - returns line segments [AB, BC, CD, DA]
 * `union(r1, r2)` - Union of two rectangles resulting in a larger rectangle.
 * `intersect(r1, r2)` - Intersection of two rectangles.
+* `intersects(r1, r2)` - If rectangle `r1` and `r2` intersect each other.
 * `intersects(r, l)` - If rectangle `r` and line `l` intersect each other.
 * `inside(p, r)` - Point `p` is inside rectangle `r`
 * `inside(ri, ro)` - Rectangle `ri` is fully enclosed in `ro`

@@ -87,6 +87,15 @@ using Base.Test
     @test delete_rect!(ormy, Rect(0, 20, 100, 30)) == 11
     @test intersect(ormy, Rect(0, 0, 110, 55)) == ([Rect(0, 40, 100, 50)], [2])
 
+    rects = [Rect(0, 20*i, 100, 10 + 20*i) for i = 1:10]
+    is = [i for i=1:10]
+    @test_throws AssertionError create_ordered_map(rects, is, dir=2, reverseMax=-1)
+    ormy = create_ordered_map(rects, is, dir=2, reverseMax=400)
+    v = insert_rect!(ormy, Rect(0, 20, 100, 30), 11)
+    @test delete_rect!(ormy, Rect(0, 20, 100, 30)) == 11
+    @test intersect(ormy, Rect(0, 0, 110, 75)) ==
+        ([Rect(0, 60, 100, 70), Rect(0, 40, 100, 50)], [3, 2])
+
     ormx = create_ordered_map(rects, is, dir=1)
     v = insert_rect!(ormx, Rect(0, 20, 100, 30), 11)
     @test delete_rect!(ormx, Rect(0, 20, 100, 30)) == 11

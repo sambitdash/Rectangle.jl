@@ -39,9 +39,13 @@ perceive existence of a minimum distance of one point in `r1` from `r2`. Similar
 would also exist for every point in `r2` from `r1`.
 * `min_dist(r1, r2)` - The gap between two rectangular regions. If there is overlap along a
 specific direction 0 will be returned.
-* `create_ordered_map(rects, values; dir=1)` - Ordered list of
+* `create_ordered_map(rects, values; dir=1, reverseMax=zero(T))` - Ordered list of
   rectangles and associate data values. `dir=1` orders the rectangles
-  by `x-axis` first and `2` by `y-axis`.
+  by `x-axis` first and `2` by `y-axis`. `reverseMax` parameter provides the primary index
+  to be sorted by reverse order. If the value of `reverseMax > zero(T)` then the ranges are
+  subtracted from the range parameters so that they are sorted in a reverse order. This is 
+  particularly useful to return values of intersect in a reverse order from top to bottom 
+  or right to left.
 * `intersect(ordered_rect_map, rect)` - Return all the values for rectangles that intersect
 with `rect`.
 * `insert_rect!(ordered_rect_map, rect, value)` - Insert value associated with the `rect`.

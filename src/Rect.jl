@@ -277,15 +277,21 @@ min_dist(r1::Rect, r2::Rect) = min_dist(promote(r1, r2)...)
 
 mutable struct OrderedRectMap{T <: Number, V, D}
     data::IntervalMap{T, IntervalMap{T, V}}
-    OrderedRectMap{T, V, D}() where {T <: Number, V, D} =
-        new(IntervalMap{T, IntervalMap{T, V}}())
+    reverseMax::T
+    function OrderedRectMap{T, V, D}(;reverseMax::T=zero(T)) where {T <: Number, V, D}
+        @assert reverseMax >= zero(T) "Invalid max value for reverse ordering"
+        new(IntervalMap{T, IntervalMap{T, V}}(), reverseMax)
+    end
 end
 
 const OrderedRectMapX{T, V} = OrderedRectMap{T, V, dir=1}
 const OrderedRectMapY{T, V} = OrderedRectMap{T, V, dir=2}
 
-function create_ordered_map(rects::AbstractVector{Rect{T}}, values::AbstractVector{V}; dir::Int=1) where {T <: Number, V}
-    map = OrderedRectMap{T, V, dir}()
+function create_ordered_map(rects::AbstractVector{Rect{T}},
+                            values::AbstractVector{V};
+                            dir::Int=1,
+                            reverseMax::T=zero(T)) where {T <: Number, V}
+    map = OrderedRectMap{T, V, dir}(reverseMax=reverseMax)
     itr = start(rects)
     itv = start(values)
     odir = dir == 1? 2 : 1
@@ -298,11 +304,14 @@ function create_ordered_map(rects::AbstractVector{Rect{T}}, values::AbstractVect
 end
 
 function intersect(orm::OrderedRectMap{T1, V, D},
-    r::Rect{T2}) where {T1 <: Number, T2 <: Number, V, D}
+                   r::Rect{T2}) where {T1 <: Number, T2 <: Number, V, D}
     rect = convert(Rect{T1}, r)
     dir = D
     odir = dir == 1? 2 : 1
     r1 = coord(rect, dir)
+    if orm.reverseMax != zero(T1)
+        r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
+    end
     r2 = coord(rect, odir)
     imv1 = intersect(orm.data, (r1[1], r1[2]))
     iv1 = start(imv1)
@@ -315,7 +324,9 @@ function intersect(orm::OrderedRectMap{T1, V, D},
         while !done(imv2, iv2)
             v2, iv2 = next(imv2, iv2)
             m = zeros(T1, (2,2))
-            m[ dir, 1], m[ dir, 2] = v1.first, v1.last
+            m[ dir, 1], m[ dir, 2] = (orm.reverseMax == zero(T1)) ?
+                                     (v1.first, v1.last) :
+                                     (orm.reverseMax - v1.last, orm.reverseMax - v1.first)
             m[odir, 1], m[odir, 2] = v2.first, v2.last
             push!(retr, Rect{T1}(m))
             push!(retv, v2.value)
@@ -330,6 +341,9 @@ function insert_rect!(orm::OrderedRectMap{T1, V, D},
     dir = D
     odir = dir == 1? 2 : 1
     r1 = coord(rect, dir)
+    if orm.reverseMax != zero(T1)
+        r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
+    end
     r2 = coord(rect, odir)
     imv = get(orm.data, (r1[1], r1[2]), nothing)
     ret = nothing
@@ -350,6 +364,9 @@ function delete_rect!(orm::OrderedRectMap{T1, V, D},
     dir = D
     odir = dir == 1? 2 : 1
     r1 = coord(rect, dir)
+    if orm.reverseMax != zero(T1)
+        r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
+    end
     r2 = coord(rect, odir)
     imv = get(orm.data, (r1[1], r1[2]), nothing)
     imv == nothing && return nothing

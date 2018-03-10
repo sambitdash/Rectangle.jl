@@ -278,9 +278,10 @@ min_dist(r1::Rect, r2::Rect) = min_dist(promote(r1, r2)...)
 mutable struct OrderedRectMap{T <: Number, V, D}
     data::IntervalMap{T, IntervalMap{T, V}}
     reverseMax::T
-    function OrderedRectMap{T, V, D}(;reverseMax::T=zero(T)) where {T <: Number, V, D}
+    function OrderedRectMap{T, V, D}(
+        ;reverseMax::T1=zero(T)) where {T <: Number, V, D, T1 <: Number}
         @assert reverseMax >= zero(T) "Invalid max value for reverse ordering"
-        new(IntervalMap{T, IntervalMap{T, V}}(), reverseMax)
+        new(IntervalMap{T, IntervalMap{T, V}}(), convert(T, reverseMax))
     end
 end
 
@@ -290,7 +291,7 @@ const OrderedRectMapY{T, V} = OrderedRectMap{T, V, dir=2}
 function create_ordered_map(rects::AbstractVector{Rect{T}},
                             values::AbstractVector{V};
                             dir::Int=1,
-                            reverseMax::T=zero(T)) where {T <: Number, V}
+                            reverseMax::T1=zero(T)) where {T <: Number, V, T1 <: Number}
     map = OrderedRectMap{T, V, dir}(reverseMax=reverseMax)
     itr = start(rects)
     itv = start(values)

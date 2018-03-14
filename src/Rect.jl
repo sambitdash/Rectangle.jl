@@ -1,6 +1,6 @@
 using IntervalTrees
 
-import Base: ==, union, intersect, promote_rule, convert
+import Base: ==, union, intersect, promote_rule, convert, show
 
 struct Rect{T <: Number}
     m::Matrix{T}
@@ -24,6 +24,8 @@ convert(::Type{Rect{T}}, r::Rect{S}) where {T <: Number, S <: Number} =
 
 promote_rule(::Type{Rect{T}}, ::Type{Rect{S}}) where {T <: Number, S <: Number} =
     Rect{promote_type(T, S)}
+
+show(io::IO, r::Rect) = show(io, "Rect:[$(lx(r)) $(ly(r)) $(rx(r)) $(ry(r))]")
 
 lb(r) = lb(r.m)
 ru(r) = ru(r.m)

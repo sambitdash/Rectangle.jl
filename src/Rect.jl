@@ -203,10 +203,12 @@ function visible(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T <: Number
     ox == (nothing, nothing) && return nothing
     saxis = (axis == 1? 2:1)
     tr1, tr2 = sortr(ox[1], ox[2], axis=saxis)
-    tr1.m[saxis, 1] = tr1.m[saxis, 2]
-    tr1.m[saxis, 2] + pcTol(T) > tr2.m[saxis, 1] && return nothing
-    tr1.m[saxis, 2] = tr2.m[saxis, 1]
-    return tr1
+    m = copy(tr1.m)
+    m[saxis, 1] = tr1.m[saxis, 2]
+    m[saxis, 2] + pcTol(T) > tr2.m[saxis, 1] &&
+        return Line(lx(tr2), ly(tr2), lx(tr2), ry(tr2))
+    m[saxis, 2] = tr2.m[saxis, 1]
+    return Rect(m[1, 1], m[2, 1], m[1, 2], m[2, 2])
 end
 
 function get_overlapped_dist(l, h, f, a1, a2)

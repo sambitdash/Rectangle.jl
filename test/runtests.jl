@@ -28,6 +28,8 @@ using Base.Test
         Rect(3.0, 1.0, 10.0, 2.0)
     @test visibleY(Rect(0.0, 0.0, 10.0, 1.0), Rect(3.0, 2.0, 11.0, 4.0)) ==
             nothing
+    @test visibleY(Rect(0.0, 0.0, 10.0, 1.0), Rect(10.0, 0.0, 11.0, 4.0)) ==
+            Line(10.0, 0.0, 10.0, 1.0)
 
     @test visibleY(Rect(0.0, 0.0, 1.0, 10.0), Rect(2, 3, 4, 11)) ==
         Rect(1.0, 3.0, 2.0, 10.0)

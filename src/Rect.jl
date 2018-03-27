@@ -25,7 +25,7 @@ convert(::Type{Rect{T}}, r::Rect{S}) where {T <: Number, S <: Number} =
 promote_rule(::Type{Rect{T}}, ::Type{Rect{S}}) where {T <: Number, S <: Number} =
     Rect{promote_type(T, S)}
 
-show(io::IO, r::Rect) = show(io, "Rect:[$(lx(r)) $(ly(r)) $(rx(r)) $(ry(r))]")
+show(io::IO, r::Rect) = print(io, "Rect:[$(lx(r)) $(ly(r)) $(rx(r)) $(ry(r))]")
 
 lb(r) = lb(r.m)
 ru(r) = ru(r.m)

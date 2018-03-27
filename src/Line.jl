@@ -22,7 +22,8 @@ convert(::Type{Line{T}}, r::Line{S}) where {T <: Number, S <: Number} =
 promote_rule(::Type{Line{T}}, ::Type{Line{S}}) where {T <: Number, S <: Number} =
     Line{promote_type(T, S)}
 
-show(io::IO, r::Line) = show(io, "Line:[$(r.m[1, 1]) $(r.m[2, 1]) $(r.m[1, 2]) $(r.m[2, 2])]")
+show(io::IO, r::Line) =
+    print(io, "Line:[$(r.m[1, 1]) $(r.m[2, 1]) $(r.m[1, 2]) $(r.m[2, 2])]")
 
 ==(l1::Line{T}, l2::Line{T}) where {T <: Number} = all(iszero.(l1.m - l2.m))
 ==(l1::Line, l2::Line) = ==(promote(l1, l2)...)

@@ -42,10 +42,12 @@ y(r) = coord(r, 2)
 c_lo(r, axis)   = r.m[axis, 1]
 c_hi(r, axis)   = r.m[axis, 2]
 
-hlines(r::Rect) = (Line(lx(r), ly(r), rx(r), ly(r)), Line(lx(r), ry(r), rx(r), ry(r)))
-vlines(r::Rect) = (Line(lx(r), ly(r), lx(r), ry(r)), Line(rx(r), ly(r), rx(r), ry(r)))
-lines(r::Rect) = [hlines(r)..., vlines(r)...]
+hlines(r::Rect) = [Line(lx(r), ly(r), rx(r), ly(r)), Line(lx(r), ry(r), rx(r), ry(r))]
+vlines(r::Rect) = [Line(lx(r), ly(r), lx(r), ry(r)), Line(rx(r), ly(r), rx(r), ry(r))]
+lines(r::Rect)  = [hlines(r)..., vlines(r)...]
 olines(r::Rect) = (ls = lines(r); [ls[1], ls[4], reverse(ls[2]), reverse(ls[3])])
+diags(r::Rect)  = [Line(lx(r), ly(r), rx(r), ry(r)), Line(rx(r), ly(r), lx(r), ry(r))]
+cg(r::Rect) = div(diags(r)[1], 1//2)
 
 function union(r1::Rect, r2::Rect)
     l = min.(lb(r1), lb(r2))

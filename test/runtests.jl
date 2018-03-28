@@ -104,12 +104,13 @@ using Base.Test
     @test delete_rect!(ormx, Rect(0, 20, 100, 30)) == 11
     @test intersect(ormx, Rect(0, 0, 110, 55)) == ([Rect(0, 40, 100, 50)], [2])
 
-    @test hlines(Rect(0, 0, 10, 10)) == (Line(0, 0, 10, 0), Line(0, 10, 10, 10))
-    @test vlines(Rect(0, 0, 10, 10)) == (Line(0, 0, 0, 10), Line(10, 0, 10, 10))
+    @test hlines(Rect(0, 0, 10, 10)) == [Line(0, 0, 10, 0), Line(0, 10, 10, 10)]
+    @test vlines(Rect(0, 0, 10, 10)) == [Line(0, 0, 0, 10), Line(10, 0, 10, 10)]
     @test lines(Rect(0, 0, 10, 10)) == [Line(0, 0, 10, 0), Line(0, 10, 10, 10),
                                         Line(0, 0, 0, 10), Line(10, 0, 10, 10)] 
     @test olines(Rect(0, 0, 10, 10)) == [Line(0, 0, 10, 0), Line(10, 0, 10, 10),
                                          Line(10, 10, 0, 10), Line(0, 10, 0, 0)]
+    @test cg(Rect(0, 0, 10, 10)) == [5, 5]
     @test intersects(Rect(0, 0, 10, 10), Rect(5, 5, 15, 15))
     @test intersects(Rect(0, 0, 10, 10.0), Line(-1, -1, 11.0, 11))
     @test intersects(Rect(0, 0, 10, 10), Line(5, -5, 11, 11))
@@ -134,4 +135,5 @@ end
     @test !intersects(Line(0, 0, 4, 4), Line(5, 5, 0.0, 10))
     @test !intersects(Line(0, 0, 4, 4), Line(10, 0, 0.0, 10))
     @test reverse(Line(0, 0, 10, 20)) == Line(10, 20, 0, 0)
+    @test div(Line(0, 0, 10, 10), 1//20) == [1//2, 1//2]
 end

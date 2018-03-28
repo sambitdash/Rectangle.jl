@@ -1,4 +1,4 @@
-import Base: ==, convert, promote_rule, length, reverse, show
+import Base: ==, convert, promote_rule, length, reverse, show, div
 
 struct Line{T <: Number}
     m::Matrix{T}
@@ -76,6 +76,9 @@ end
 
 ratio(l::Line{T}, p::Vector{S}) where {T <: Number, S <: Number} = 
     (ST = promote_type(S, T); ratio(convert(Line{ST}, l), convert(Vector{ST}, p)))
+
+div(l::Line{T}, r::R) where {T <: Number, R <: Real} =
+    l.m[:, 1]*(one(R) - r) + l.m[:, 2]*r
 
 """
 ```

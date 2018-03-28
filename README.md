@@ -21,12 +21,14 @@ those are given emphasis. Currently the following methods are available.
   * `hlines(r)` - returns line segments (AD, BC)
   * `lines(r)`  - returns line segments [AB, DC, AD, BC]
   * `olines(r)` - returns line segments [AB, BC, CD, DA]
+  * `diags(r)`  - returns line segments [AC, BD]
 * `union(r1, r2)` - Union of two rectangles resulting in a larger rectangle.
 * `intersect(r1, r2)` - Intersection of two rectangles.
 * `intersects(r1, r2)` - If rectangle `r1` and `r2` intersect each other.
 * `intersects(r, l)` - If rectangle `r` and line `l` intersect each other.
 * `inside(p, r)` - Point `p` is inside rectangle `r`
 * `inside(ri, ro)` - Rectangle `ri` is fully enclosed in `ro`
+* `cg(r)` - Center of gravity of the rectangle `r`
 * `to_plot_shape(r)` - `Shape` object to be used in `Plots` library.
 * `projectX(r1, r2)` - Find overlap regions when projected onto X-axis.
 * `projectY(r1, r2)` - Find overlap regions when projected onto Y-axis
@@ -62,6 +64,7 @@ the associated value.
 a point.
 * `ratio(l,p)` - if point `p` lies on line `l`, then it will divide the line at a ratio 
 `r : (1-r)` otherwise `nothing`
+* `div(l, r)` - the point that divides the line `l` at ratio `r : (1-r)`
 * `intersects(l1, l2)` - if line `l1` intersects `l2`. 
 
 ## Contribution

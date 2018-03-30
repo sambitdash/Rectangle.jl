@@ -203,7 +203,7 @@ visible(r1::Rect, r2::Rect; axis::Int=1) = visible(promote(r1, r2)...; axis=axis
 function visible(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T <: Number
     l, ox, r = project(r1, r2, axis=axis)
     ox == (nothing, nothing) && return nothing
-    saxis = (axis == 1? 2:1)
+    saxis = (axis == 1 ? 2 : 1)
     tr1, tr2 = sortr(ox[1], ox[2], axis=saxis)
     m = copy(tr1.m)
     m[saxis, 1] = tr1.m[saxis, 2]
@@ -301,7 +301,7 @@ function create_ordered_map(rects::AbstractVector{Rect{T}},
     map = OrderedRectMap{T, V, dir}(reverseMax=reverseMax)
     itr = start(rects)
     itv = start(values)
-    odir = dir == 1? 2 : 1
+    odir = dir == 1 ? 2 : 1
     while !done(rects, itr)
         (rect, itr) = next(rects,  itr)
         (v2,   itv) = next(values, itv)
@@ -314,7 +314,7 @@ function intersect(orm::OrderedRectMap{T1, V, D},
                    r::Rect{T2}) where {T1 <: Number, T2 <: Number, V, D}
     rect = convert(Rect{T1}, r)
     dir = D
-    odir = dir == 1? 2 : 1
+    odir = dir == 1 ? 2 : 1
     r1 = coord(rect, dir)
     if orm.reverseMax != zero(T1)
         r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
@@ -346,7 +346,7 @@ function insert_rect!(orm::OrderedRectMap{T1, V, D},
     r::Rect{T2}, v::V) where {T1 <: Number, T2 <: Number, V, D}
     rect = convert(Rect{T1}, r)
     dir = D
-    odir = dir == 1? 2 : 1
+    odir = dir == 1 ? 2 : 1
     r1 = coord(rect, dir)
     if orm.reverseMax != zero(T1)
         r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
@@ -369,7 +369,7 @@ function delete_rect!(orm::OrderedRectMap{T1, V, D},
     r::Rect{T2}) where {T1 <: Number, T2 <: Number, V, D}
     rect = convert(Rect{T1}, r)
     dir = D
-    odir = dir == 1? 2 : 1
+    odir = dir == 1 ? 2 : 1
     r1 = coord(rect, dir)
     if orm.reverseMax != zero(T1)
         r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])

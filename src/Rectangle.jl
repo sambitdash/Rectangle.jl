@@ -21,5 +21,6 @@ export  Line,
 include("utils.jl")
 include("Line.jl")
 include("Rect.jl")
+include("bst.jl")
 
 end # module

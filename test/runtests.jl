@@ -137,3 +137,22 @@ end
     @test reverse(Line(0, 0, 10, 20)) == Line(10, 20, 0, 0)
     @test div(Line(0, 0, 10, 10), 1//20) == [1//2, 1//2]
 end
+
+@testset "BinarySearchTree" begin
+    a = [4, 5, 3, 1, 10, 2, 7, 6, 8, 9]
+    t = BinarySearchTree{Int, Int}()
+
+    @test isempty(t)
+
+    for i in a
+        tree_insert!(t, i, i*10)
+    end
+    @test length(t) == 10
+    @test !isempty(t)
+    
+    @test tree_get_data(t)[1] == sort(a)
+    @test tree_delete!(t, 5) == ([5], [50])
+    @test tree_get_data(t)[2] == [10, 20, 30, 40, 60, 70, 80, 90, 100]
+    empty!(t)
+    @test isempty(t)
+end

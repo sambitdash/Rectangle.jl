@@ -215,11 +215,11 @@ end
 
 function get_overlapped_dist(l, h, f, a1, a2)
     # l = low and h = high
-    lr, adl = l[1] == nothing ? (l[2], a2) : (l[1], a1)
-    wlal    = lr   == nothing ? zero(a1)   : f(lr)*area(lr)
+    lr, adl = l[1] === nothing ? (l[2], a2) : (notvoid(l[1]), a1)
+    wlal    = lr   === nothing ? zero(a1)   : f(notvoid(lr))*area(notvoid(lr))
 
-    hr, adh = h[1] == nothing ? (h[2], a2) : (h[1], a1)
-    whah    = hr   == nothing ? zero(a1)   : f(hr)*area(hr)
+    hr, adh = h[1] === nothing ? (h[2], a2) : (notvoid(h[1]), a1)
+    whah    = hr   === nothing ? zero(a1)   : f(notvoid(hr))*area(notvoid(hr))
 
     d = Float64(wlal)/Float64(adl) + Float64(whah)/Float64(adh)
     return d/2.0
@@ -241,7 +241,6 @@ The minimum distance will be `zero` when the rectangles are intersecting.
 The distance also will be lower in a specific direction if there is an overlap of the
 rectangles in that direction
 """
-
 function avg_min_dist(r1::Rect, r2::Rect)
     intersect(r1, r2) != nothing && return 0.0, 0.0
     h1, h2 = Float64(h(r1)),    Float64(h(r2))
@@ -376,9 +375,9 @@ function delete_rect!(orm::OrderedRectMap{T1, V, D},
     end
     r2 = coord(rect, odir)
     imv = get(orm.data, (r1[1], r1[2]), nothing)
-    imv == nothing && return nothing
-    ret = get(imv.value, (r2[1], r2[2]), nothing)
-    delete!(imv.value, (r2[1], r2[2]))
-    isempty(imv.value) && delete!(orm.data, (r1[1], r1[2]))
-    return ret == nothing ? ret : ret.value
+    imv === nothing && return nothing
+    ret = get(notvoid(imv).value, (r2[1], r2[2]), nothing)
+    delete!(notvoid(imv).value, (r2[1], r2[2]))
+    isempty(notvoid(imv).value) && delete!(orm.data, (r1[1], r1[2]))
+    return ret === nothing ? ret : notvoid(ret).value
 end

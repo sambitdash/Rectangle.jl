@@ -95,7 +95,8 @@ function intersects(l1::Line{T}, l2::Line{T}) where {T <: Real}
         for j = 1:2 
             if iszero(t[i, j])
                 r = ratio(l[i, 1], l[i, 2].m[:, j])
-                return zero(T) <= r <= one(T)
+                r === nothing && continue
+                return zero(T) <= notvoid(r) <= one(T)
             end
         end
     end

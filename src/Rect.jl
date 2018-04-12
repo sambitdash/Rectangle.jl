@@ -55,6 +55,9 @@ function union(r1::Rect, r2::Rect)
     return Rect(l[1], l[2], r[1], r[2])
 end
 
+union(r1::Rect, r2::Rect, y...) = union(r1, union(r2, y...))
+union(r::Rect) = r
+
 intersect(r1::Rect, r2::Rect) = intersect(promote(r1, r2)...)
 
 function intersect(r1::Rect{T}, r2::Rect{T}) where T <: Number
@@ -308,6 +311,28 @@ function create_ordered_map(rects::AbstractVector{Rect{T}},
     end
     return map
 end
+
+
+function intersect(orm::OrderedRectMap{T1, V, D},
+                   rect::Rect{T2}, dX::T1, dY::T1;
+                   dirX=0, dirY=0) where {T1 <: Number, T2 <: Number, V, D}
+    dl = dirX > 0  ? zero(T1) : -dX
+    dr = dirX < 0  ? zero(T1) :  dX
+    dd = dirY > 0  ? zero(T1) : -dY
+    du = dirY < 0  ? zero(T1) :  dY
+
+    r = convert(Rect{T1}, rect)
+
+    while true 
+        tr = Rect(lx(r) + dl, ly(r) + dd, rx(r) + dr, ry(r) + du)
+        rs, vs = intersect(orm, tr)
+        length(rs) == 0 && return rs, vs
+        ttr = union(rs...)
+        r == ttr && return rs, vs
+        r = ttr
+    end
+end
+
 
 function intersect(orm::OrderedRectMap{T1, V, D},
                    r::Rect{T2}) where {T1 <: Number, T2 <: Number, V, D}

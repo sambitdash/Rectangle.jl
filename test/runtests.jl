@@ -104,6 +104,21 @@ using Base.Test
     @test delete_rect!(ormx, Rect(0, 20, 100, 30)) == 11
     @test intersect(ormx, Rect(0, 0, 110, 55)) == ([Rect(0, 40, 100, 50)], [2])
 
+    begin
+        rs = [Rect(0, 0, 10, 10), Rect(11, 11, 20, 20),
+              Rect(21, 21, 30, 30), Rect(31, 31, 40, 40)]
+        ormx = create_ordered_map(rs, fill(1, 4))
+        @test intersect(ormx, Rect(0, 0, 10, 10), 1, 1) ==
+            ([Rect(0, 0, 10, 10), Rect(11, 11, 20, 20),
+              Rect(21, 21, 30, 30), Rect(31, 31, 40, 40)], fill(1, 4))
+
+        @test intersect(ormx, Rect(0, 0, 10, 10), 1, 0) ==
+            ([Rect(0, 0, 10, 10)], fill(1, 1))
+        @test intersect(ormx, Rect(1, 11, 9, 19), 1, 0) ==
+            (Rect{Int}[], Void[])
+    end
+
+    
     @test hlines(Rect(0, 0, 10, 10)) == [Line(0, 0, 10, 0), Line(0, 10, 10, 10)]
     @test vlines(Rect(0, 0, 10, 10)) == [Line(0, 0, 0, 10), Line(10, 0, 10, 10)]
     @test lines(Rect(0, 0, 10, 10)) == [Line(0, 0, 10, 0), Line(0, 10, 10, 10),

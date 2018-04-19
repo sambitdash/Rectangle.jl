@@ -1,4 +1,4 @@
-import Base: ==, convert, promote_rule, length, reverse, show, div
+import Base: ==, convert, promote_rule, length, reverse, show, div, start, endof
 
 struct Line{T <: Number}
     m::Matrix{T}
@@ -10,6 +10,14 @@ struct Line{T <: Number}
 end
 
 Line(m::Matrix{T}) where {T <: Number} = Line{T}(m)
+
+Base.start(l::Line) = l.m[:, 1]
+Base.endof(l::Line) = l.m[:, 2]
+
+@inline sx(l::Line) = l.m[1, 1]
+@inline sy(l::Line) = l.m[2, 1]
+@inline ex(l::Line) = l.m[2, 1]
+@inline ey(l::Line) = l.m[2, 2]
 
 function Line(lx::Number, ly::Number, rx::Number, ry::Number)
     t = promote(lx, ly, rx, ry)
@@ -106,3 +114,49 @@ end
 
 intersects(l1::Line, l2::Line) = intersects(promote(l1, l2)...)
 
+"""
+```
+    merge_axis_aligned(alines::Vector{Line{T}}, 
+                       axis::Int=1, 
+                       order::Symbol=:increasing,
+                       tol::T=pcTol(T)) -> Vector{Line{T}}
+```
+Given an array of axis aligned lines, if the line ends touch the lines are 
+merged into a larger segment. Lines which are not touching the other lines are left 
+intact.
+
+`order` parameter can be in `:increasing` or `:decreasing` order in the direction of
+the axis. 
+
+`axis` parameter can be `1` for horizontal lines and `2` for vertical lines. 
+
+"""
+function merge_axis_aligned(alines::Vector{Line{T}},
+                            axis::Int=1,
+                            order::Symbol=:increasing,
+                            tol::T=pcTol(T)) where {T}
+    length(alines) == 0 && return Line{T}[]
+    pl = alines[1]
+    m = copy(pl.m)
+    oaxis = axis == 1? 2 : 1
+    vl = Vector{Line{T}}()
+    for i = 2:length(alines)
+        l = alines[i]
+        if iszero(l.m[oaxis, 1] - pl.m[oaxis, 1]) 
+            if order === :increasing && abs(l.m[axis, 1] - pl.m[axis, 2]) <= tol
+                m[axis, 2] = l.m[axis, 2]
+            elseif order === :decreasing && abs(l.m[axis, 2] - pl.m[axis, 1]) <= tol
+                m[axis, 1] = l.m[axis, 1]
+            else
+                push!(vl, Line{T}(m))
+                m = copy(l.m)
+            end
+        else
+            push!(vl, Line{T}(m))
+            m = copy(l.m)
+        end
+        pl = l
+    end
+    push!(vl, Line{T}(m))
+    return vl
+end

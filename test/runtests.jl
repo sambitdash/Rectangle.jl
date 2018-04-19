@@ -151,6 +151,34 @@ end
     @test !intersects(Line(0, 0, 4, 4), Line(10, 0, 0.0, 10))
     @test reverse(Line(0, 0, 10, 20)) == Line(10, 20, 0, 0)
     @test div(Line(0, 0, 10, 10), 1//20) == [1//2, 1//2]
+    @test begin
+        a = [Line(0, 0, 10, 0), Line(10, 0, 20, 0), Line(20, 0, 30, 0), Line(40, 0, 50, 0),
+             Line(40, 5, 50, 5), 
+             Line(0, 10, 10, 10), Line(10, 10, 20, 10), Line(20, 10, 30, 10)]
+        merge_axis_aligned(a) == [Line(0, 0, 30, 0), Line(40, 0, 50, 0),
+                                  Line(40, 5, 50, 5), Line(0, 10, 30, 10)]
+    end
+    @test begin
+        a = [Line(0, 0, 0, 10), Line(0, 10, 0, 20), Line(0, 20, 0, 30), Line(0, 40, 0, 50),
+             Line(5, 40, 5, 50), 
+             Line(10, 0, 10, 10), Line(10, 10, 10, 20), Line(10, 20, 10, 30)]
+        merge_axis_aligned(a, 2) == [Line(0, 0, 0, 30), Line(0, 40, 0, 50),
+                                     Line(5, 40, 5, 50), Line(10, 0, 10, 30)]
+    end
+    @test begin
+        a = [Line(0, 40, 0, 50), Line(0, 20, 0, 30), Line(0, 10, 0, 20), Line(0, 0, 0, 10), 
+             Line(5, 40, 5, 50), 
+             Line(10, 20, 10, 30), Line(10, 10, 10, 20), Line(10, 0, 10, 10)]
+        merge_axis_aligned(a, 2, :decreasing) == [Line(0, 40, 0, 50), Line(0, 0, 0, 30), 
+                                                  Line(5, 40, 5, 50), Line(10, 0, 10, 30)]
+    end
+    @test begin
+        a = [Line(0, 40, 0, 50), Line(0, 20, 0, 30f0), Line(0, 10, 0, 20), Line(0, 0, 0, 10), 
+             Line(5, 40, 5, 50), 
+             Line(10, 20, 10, 30), Line(10, 10, 10, 20), Line(10, 0, 10, 10)]
+        merge_axis_aligned(a, 2, :decreasing) == [Line(0, 40, 0, 50f0), Line(0, 0, 0, 30), 
+                                                  Line(5, 40, 5, 50), Line(10, 0, 10, 30)]
+    end
 end
 
 @testset "BinarySearchTree" begin

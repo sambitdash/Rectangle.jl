@@ -4,7 +4,7 @@ module Rectangle
 
 export  Line,
             isHorizontal, isVertical, length, parallelogram_area,
-            ratio, intersects, merge_axis_aligned,
+            ratio, intersects, merge_axis_aligned, sx, sy, ex, ey,
         Rect,
             x, y, lx, ly, rx, ry, w, h, area, perimeter, hlines, vlines, lines, olines,
             union, intersects, inside, cg,

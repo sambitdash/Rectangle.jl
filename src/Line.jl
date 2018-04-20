@@ -16,7 +16,7 @@ Base.endof(l::Line) = l.m[:, 2]
 
 @inline sx(l::Line) = l.m[1, 1]
 @inline sy(l::Line) = l.m[2, 1]
-@inline ex(l::Line) = l.m[2, 1]
+@inline ex(l::Line) = l.m[1, 2]
 @inline ey(l::Line) = l.m[2, 2]
 
 function Line(lx::Number, ly::Number, rx::Number, ry::Number)

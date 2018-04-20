@@ -156,6 +156,10 @@ end
         l == Line(sx(l), sy(l), ex(l), ey(l))
     end
     @test begin
+        l = Line(1, 2, 3, 4)
+        start(l) == [sx(l), sy(l)] && endof(l) == [ex(l), ey(l)]
+    end
+    @test begin
         a = [Line(0, 0, 10, 0), Line(10, 0, 20, 0), Line(20, 0, 30, 0), Line(40, 0, 50, 0),
              Line(40, 5, 50, 5), 
              Line(0, 10, 10, 10), Line(10, 10, 20, 10), Line(20, 10, 30, 10)]

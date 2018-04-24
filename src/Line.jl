@@ -160,3 +160,27 @@ function merge_axis_aligned(alines::Vector{Line{T}},
     push!(vl, Line{T}(m))
     return vl
 end
+
+function intersect_axis_aligned(hl::Line{T}, vl::Line{T}, tol::T) where T <: Number
+    x, y  = sx(vl), sy(hl)
+    if sx(hl) > ex(hl)
+        hl = reverse(hl)
+    end
+    if sy(vl) > ey(vl)
+        vl = reverse(vl)
+    end
+    if sx(hl) - tol <= x <= ex(hl) + tol && sy(vl) - tol <= y <= ey(vl) + tol
+        return T[x, y]
+    else
+        return T[]
+    end
+end
+
+function intersect_axis_aligned(hl::Line{T1},
+                                vl::Line{T2},
+                                tol::T=pcTol(T)) where {T1 <: Number, T2 <: Number, T <: Number}
+    ST = promote_type(T1, T2, T)
+    return intersect_axis_aligned(convert(Line{ST}, hl),
+                                  convert(Line{ST}, vl),
+                                  convert(ST, tol))
+end

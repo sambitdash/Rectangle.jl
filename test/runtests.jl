@@ -187,6 +187,9 @@ end
         merge_axis_aligned(a, 2, :decreasing) == [Line(0, 40, 0, 50f0), Line(0, 0, 0, 30), 
                                                   Line(5, 40, 5, 50), Line(10, 0, 10, 30)]
     end
+    @test intersect_axis_aligned(Line(0, 0, 10, 0), Line(0, 1, 10, 1), 1) == [0, 0]
+    @test intersect_axis_aligned(Line(0, 0, 10, 0), Line(0, 1, 10, 1), 1.0) == [0, 0]
+    @test intersect_axis_aligned(Line(0, 0, 10, 0), Line(0, 2, 10, 2), 1.0) == []
 end
 
 @testset "BinarySearchTree" begin

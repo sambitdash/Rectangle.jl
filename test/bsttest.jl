@@ -91,6 +91,7 @@ end
     end
     @test collect(Iterator(t)) == [1=>10, 2=>20, 3=>30, 4=>40, 5=>50,
                                    6=>60, 7=>70, 8=>80, 9=>90, 10=>100]
+    @test collect(Iterator(t, 1, 3)) == [1=>10, 2=>20, 3=>30]
     @test length(t) == 10
     @test !isempty(t)
     @test maximum(t) == (10 =>100)
@@ -176,6 +177,8 @@ end
     end
     @test collect(Iterator(t)) == [1=>10, 2=>20, 3=>30, 4=>40, 5=>50,
                                    6=>60, 7=>70, 8=>80, 9=>90, 10=>100]
+    @test collect(Iterator(t, 3, 8)) == [3=>30, 4=>40, 5=>50,
+                                         6=>60, 7=>70, 8=>80]
     @test parentvalidity(t)
     @test bstvalidity(t)
     @test rbvalidity(t)
@@ -235,13 +238,17 @@ end
             b[x], b[y] = b[y], b[x]
         end
         a = Tuple{Int, Int}[]
+        pa = Pair{Int, Int}[]
         for i = 1:n
             insert!(t, b[i], i)
             push!(a, (b[i], i))
+            push!(pa, (b[i] => i))
         end
         ka, kv = tree_get_data(t)
         aa = sort(a, lt= (x, y) -> x[1] < y[1])
+        pa = sort(pa, lt= (x, y) -> x[1] < y[1])
         @test aa == collect(zip(ka, kv))
+        @test pa == collect(Iterator(t))
         @test rbvalidity(t)
         @test bstvalidity(t)
         @test parentvalidity(t)

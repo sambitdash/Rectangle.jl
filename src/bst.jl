@@ -18,9 +18,9 @@
 abstract type AbstractNode{K, V} end
 abstract type AbstractBST{K, V} end
 
-Base.isless(n1::T, n2::T) where {T <:AbstractNode} = Base.isless(_k(n1), _k(n2))
-Base.isless(n::AbstractNode{K, V}, k::K) where {K, V} = isless(_k(n), k)
-Base.isless(k::K, n::AbstractNode{K, V}) where {K, V} = isless(k, _k(n))
+Base.isless(n1::T, n2::T) where {T <:AbstractNode} = Base.isless(n1.k, n2.k)
+Base.isless(n::AbstractNode{K, V}, k::K) where {K, V} = isless(n.k, k)
+Base.isless(k::K, n::AbstractNode{K, V}) where {K, V} = isless(k, n.k)
 
 _k(n::AbstractNode) = n.k
 _v(n::AbstractNode) = n.v
@@ -31,21 +31,18 @@ _l!(t::T, x::N, y::N) where {K, V,
                              N <: AbstractNode{K, V},
                              T <: AbstractBST{K, V}} =
                                  ((x.l, y.p) = (y, (isnil(t, y) ? y.p : x)))
-# _l!(x::AbstractNode, ::Void) = (x.l = nothing)
 _r!(t::T, x::N, y::N) where {K, V,
                              N <: AbstractNode{K, V},
                              T <: AbstractBST{K, V}} =
                                  ((x.r, y.p) = (y, (isnil(t, y) ? y.p : x)))
-# _r!(x::AbstractNode, ::Void) = (x.r = nothing)
 _p!(x::T, y::T) where {T <: AbstractNode} = (x.p = y)
-# _p!(x::AbstractNode, ::Void) = (x.p = nothing)
 
 
 @inline function _extremum(dir::Function, n::AbstractNode, t::AbstractBST)
     while true
         nn = dir(n)
         isnil(t, nn) && return n
-        n = _nv(nn)
+        n = nn
     end
     return n
 end
@@ -57,11 +54,11 @@ _successor(x::AbstractNode, t::AbstractBST)   = _pred_succ(_r, _minimum, x, t)
 _predecessor(x::AbstractNode, t::AbstractBST) = _pred_succ(_l, _maximum, x, t)
 
 @inline function _pred_succ(f::Function, g::Function, x::AbstractNode, t::AbstractBST)
-    !isnil(t, f(x)) && return g(_nv(f(x)), t)
+    !isnil(t, f(x)) && return g(f(x), t)
     y = _p(x)
     while !isnil(t, y) && x === f(y)
-        x = _nv(y)
-        y = _p(_nv(y))
+        x = y
+        y = _p(y)
     end
     return y
 end
@@ -69,18 +66,17 @@ end
 function _inorder(f::Function, n::AbstractNode, t::AbstractBST)
     if !isnil(t, n)
         proceed = true
-        proceed = (proceed && _inorder(f, _l(n), t))
+        proceed = (proceed && _inorder(f, n.l, t))
         res = f(n)
         if res isa Bool
             proceed = (proceed && res)
         end
-        proceed = (proceed && _inorder(f, _r(n), t))
+        proceed = (proceed && _inorder(f, n.r, t))
         return proceed
     else
         return true
     end
 end
-_inorder(f::Function, ::Void, t::AbstractBST) = true
 
 function node_print(t::AbstractBST{K, V},
                     n::AbstractNode{K, V},
@@ -98,9 +94,6 @@ function node_print(t::AbstractBST{K, V},
     end
     node_print(t, n.r, prefix, false)
 end
-function node_print(::Void, prefix::String, decorate::String, left::Bool)
-    @printf "%s\n" prefix
-end
 
 @inline function _search(t::AbstractBST, n::AbstractNode{K, V}, k::K) where {K, V}
     while true
@@ -114,7 +107,7 @@ end
             return (n, 0)
         end
         isnil(t, nn) && return n, d
-        n = _nv(nn)
+        n = nn
     end
 end
 
@@ -130,24 +123,8 @@ mutable struct BSTNode{K, V} <: AbstractNode{K, V}
     end
 end
 
-function _inorder(f::Function, n::BSTNode)
-    proceed = true
-    proceed &= _inorder(f, _l(n))
-    proceed &= f(n)
-    proceed &= _inorder(f, _r(n))
-    return proceed
-end
-
-
-function _xch!(x::BSTNode, y::BSTNode)
-    x.k, y.k = y.k, x.k
-    x.v, y.v = y.v, x.v
-    return
-end
-
 Base.length(t::AbstractBST) = t.n
 Base.isempty(t::AbstractBST) = Base.length(t) == 0
-_root!(t::AbstractBST{K, V}, x::AbstractNode{K, V}) where {K, V} = t.root = x
 
 function Base.maximum(t::AbstractBST)
     isempty(t) && error("Empty tree cannot have a maximum")
@@ -163,7 +140,7 @@ end
 
 
 @inline function left_rotate!(t::T, x::N) where {T <: AbstractBST, N <: AbstractNode}
-    y = _nv(x.r)
+    y = x.r
     x.r = y.l
     !isnil(t, y.l) && (y.l.p = x)
     y.p = x.p
@@ -180,7 +157,7 @@ end
 end
 
 @inline function right_rotate!(t::T, y::N) where {T <: AbstractBST, N <: AbstractNode}
-    x = _nv(y.l)
+    x = y.l
     y.l = x.r
     !isnil(t, x.r) && (x.r.p = y)
     x.p = y.p
@@ -248,7 +225,7 @@ end
     tn = ni = n
     left = true
     while !isnil(t, tn)
-        ni = _nv(tn)
+        ni = tn
         tn = k < ni.k ? ni.l : (!unique || (ni.k < k)) ? ni.r :
             unique && error("Key $k already exists.")
     end
@@ -339,9 +316,12 @@ function RBNode(t::RBTree{K, V}, k::K, v::V) where {K, V}
     return s
 end
 
+function Base.show(io::IO, t::AbstractBST)
+    println(io, "$(typeof(t)) Tree with $(t.n) nodes.")
+    !isnil(t, t.root) && println(io, "Root at: $(t.root.k).")
+end
+
 isnil(t::RBTree, n::RBNode) = n === t.nil
-isnil(t::AbstractBST, ::Void)    = true
-nil(t::RBTree) = t.nil
 Base.empty!(t::RBTree) = (t.root = t.nil; t.n = 0; nothing)
 
 function Base.insert!(t::RBTree{K, V}, k::K, v::V) where {K, V}
@@ -366,6 +346,7 @@ function Base.insert!(t::RBTree{K, V}, k::K, v::V) where {K, V}
     z.red = true
     _insert_fixup!(t, z)
     t.n += 1
+    return t
 end
 
 @inline function _insert_fixup!(t::RBTree, z::RBNode)

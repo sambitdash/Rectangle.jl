@@ -67,6 +67,17 @@ a point.
 * `div(l, r)` - the point that divides the line `l` at ratio `r : (1-r)`
 * `intersects(l1, l2)` - if line `l1` intersects `l2`. 
 
+## Methods for Commonly Used Data Structures
+
+Searching and sorting the data are very common with simple geometrical objects like lines
+and rectangles in 2-D. Hence, simplified implementations of the following data structures
+are provided here. If you are looking out for more elaborate packages you can look at 
+`DataStructures.jl` or other such advanced data structure packages. Currently, only 
+`insert!` and `delete!` operations are supported. 
+
+### Binary Search Tree
+### Red and Black Tree
+
 ## Contribution
 
 Pull Requests and Issues are ways to submit changes and enhancements.

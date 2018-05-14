@@ -105,7 +105,7 @@ end
         n = 1000
         a = []
         for i = 1:n
-            j = rand(1:10000000000)
+            j = rand(1:10000)
             push!(a, j, i)
         end
         for i = 1:n

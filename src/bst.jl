@@ -44,7 +44,6 @@ _p!(x::T, y::T) where {T <: AbstractNode} = (x.p = y)
         isnil(t, nn) && return n
         n = nn
     end
-    return n
 end
 
 _maximum(n::AbstractNode, t::AbstractBST) = _extremum(_r, n, t)
@@ -53,7 +52,8 @@ _minimum(n::AbstractNode, t::AbstractBST) = _extremum(_l, n, t)
 _successor(x::AbstractNode, t::AbstractBST)   = _pred_succ(_r, _minimum, x, t)
 _predecessor(x::AbstractNode, t::AbstractBST) = _pred_succ(_l, _maximum, x, t)
 
-@inline function _pred_succ(f::Function, g::Function, x::AbstractNode, t::AbstractBST)
+@inline function _pred_succ(f::Function, g::Function,
+                            x::AbstractNode, t::AbstractBST)
     !isnil(t, f(x)) && return g(f(x), t)
     y = _p(x)
     while !isnil(t, y) && x === f(y)
@@ -139,7 +139,8 @@ function Base.minimum(t::AbstractBST)
 end
 
 
-@inline function left_rotate!(t::T, x::N) where {T <: AbstractBST, N <: AbstractNode}
+@inline function left_rotate!(t::T,
+                              x::N) where {T <: AbstractBST, N <: AbstractNode}
     y = x.r
     x.r = y.l
     !isnil(t, y.l) && (y.l.p = x)
@@ -156,7 +157,8 @@ end
     return 
 end
 
-@inline function right_rotate!(t::T, y::N) where {T <: AbstractBST, N <: AbstractNode}
+@inline function right_rotate!(t::T,
+                               y::N) where {T <: AbstractBST, N <: AbstractNode}
     x = y.l
     y.l = x.r
     !isnil(t, x.r) && (x.r.p = y)
@@ -210,7 +212,6 @@ end
 
 isnil(t::BinarySearchTree, n::BSTNode) = n === t.nil
 Base.empty!(t::BinarySearchTree) = ((t.root, t.n) = (t.nil, 0))
-root!(t::BinarySearchTree, x::BSTNode) = t.root = x
 
 function Base.insert!(t::BinarySearchTree, k::K, v::V) where {K, V}
     t.root = t.n == 0 ? BSTNode(t, k, v) : _insert!(t, t.root, k, v, t.unique)
@@ -496,7 +497,8 @@ mutable struct Iterator{K, V, T, N}
                                   to::N) where {K, V,
                                                 T <: AbstractBST{K, V},
                                                 N <: AbstractNode{K, V}}
-        @assert !(to.k < from.k) "`from` value cannot be more that the `to` value"
+        @assert isnil(t, from) || isnil(t, to) || !(to.k < from.k)
+        "`from` value cannot be more that the `to` value"
         new{K, V, T, N}(t, from, to)
     end
 end
@@ -508,7 +510,39 @@ function Iterator(t::T, from::N=_minimum(t.root, t),
     Iterator{K, V, T, N}(t, from, to)
 end
 
-Base.length(it::Iterator) = Base.length(it.tree)
+function Iterator(t::T, from::K, to::K) where {K, V, T <: AbstractBST{K, V}}
+    to < from && error("Cannot initialize iterator where `from > to`.")
+    n, d = _search(t, t.root, from)
+    if d == 0
+        nn = _predecessor(n, t)
+        while nn.k == n.k && nn !== n
+            n = nn
+            nn = _predecessor(n, t)
+        end
+    elseif d > 0
+        n = _successor(n, t)
+        isnil(t, n) && return Iterator(t, t.nil, t.nil)
+    end
+    fromN = n
+    n, d = _search(t, t.root, to)
+    nn = n
+    if d == 0
+        nn = _successor(n, t)
+        while nn.k == n.k && !isnil(t, nn)
+            n = nn
+            nn = _successor(n, t)
+        end
+        n = nn
+    elseif d < 0
+        n = _predecessor(n, t)
+    else
+        n = _successor(n, t)
+    end
+    toN = n
+    return Iterator(t, fromN, toN)
+end
+
+Base.iteratorsize(it::Iterator) = Base.SizeUnknown()
 
 Base.start(it::Iterator) = it.from
 
@@ -522,3 +556,4 @@ Base.done(it::Iterator{K, V, T, N},
           n::N) where {K, V,
                        T <: AbstractBST{K, V},
                        N <: AbstractNode{K, V}} = (n === it.to)
+

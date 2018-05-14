@@ -486,3 +486,39 @@ function _delete_fixup!(t::RBTree, x::RBNode)
     end
     x.red = false
 end
+
+mutable struct Iterator{K, V, T, N} 
+    tree::T
+    from::N
+    to::N
+    function Iterator{K, V, T, N}(t::T,
+                                  from::N,
+                                  to::N) where {K, V,
+                                                T <: AbstractBST{K, V},
+                                                N <: AbstractNode{K, V}}
+        @assert !(to.k < from.k) "`from` value cannot be more that the `to` value"
+        new{K, V, T, N}(t, from, to)
+    end
+end
+
+function Iterator(t::T, from::N=_minimum(t.root, t),
+                  to::N=t.nil) where {K, V,
+                                      T <: AbstractBST{K, V},
+                                      N <: AbstractNode{K, V}}
+    Iterator{K, V, T, N}(t, from, to)
+end
+
+Base.length(it::Iterator) = Base.length(it.tree)
+
+Base.start(it::Iterator) = it.from
+
+Base.next(it::Iterator{K, V, T, N},
+          n::N) where {K, V,
+                       T <: AbstractBST{K, V},
+                       N <: AbstractNode{K, V}} =
+                           ((n.k => n.v), _successor(n, it.tree))
+
+Base.done(it::Iterator{K, V, T, N},
+          n::N) where {K, V,
+                       T <: AbstractBST{K, V},
+                       N <: AbstractNode{K, V}} = (n === it.to)

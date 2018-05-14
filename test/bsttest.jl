@@ -89,6 +89,8 @@ end
     for i in a
         insert!(t, i, i*10)
     end
+    @test collect(Iterator(t)) == [1=>10, 2=>20, 3=>30, 4=>40, 5=>50,
+                                   6=>60, 7=>70, 8=>80, 9=>90, 10=>100]
     @test length(t) == 10
     @test !isempty(t)
     @test maximum(t) == (10 =>100)
@@ -172,6 +174,8 @@ end
     for i in a
         insert!(t, i, i*10)
     end
+    @test collect(Iterator(t)) == [1=>10, 2=>20, 3=>30, 4=>40, 5=>50,
+                                   6=>60, 7=>70, 8=>80, 9=>90, 10=>100]
     @test parentvalidity(t)
     @test bstvalidity(t)
     @test rbvalidity(t)

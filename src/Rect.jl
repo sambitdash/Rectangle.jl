@@ -312,7 +312,6 @@ function create_ordered_map(rects::AbstractVector{Rect{T}},
     return map
 end
 
-
 function intersect(orm::OrderedRectMap{T1, V, D},
                    rect::Rect{T2}, dX::T1, dY::T1;
                    dirX=0, dirY=0) where {T1 <: Number, T2 <: Number, V, D}

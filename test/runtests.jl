@@ -193,6 +193,9 @@ end
     @test intersect_axis_aligned(Line(0, 0, 10, 0), Line(0, 2, 0, 10), 1.0) == []
 end
 
+include("bsttest.jl")
+
+#=
 @testset "BinarySearchTree" begin
     a = [4, 5, 3, 1, 10, 2, 7, 6, 8, 9]
     t = BinarySearchTree{Int, Int}()
@@ -211,3 +214,4 @@ end
     empty!(t)
     @test isempty(t)
 end
+=#

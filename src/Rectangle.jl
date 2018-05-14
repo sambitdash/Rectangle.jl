@@ -16,8 +16,8 @@ export  Line,
             avg_min_dist, min_dist,
         OrderedRectMapX, OrderedRectMapY,
             create_ordered_map, get_intersect_data, insert_rect!, delete_rect!,
-        pcTol
-
+        pcTol,
+        AbstractBST, RBTree, BinarySearchTree
 
 include("utils.jl")
 include("Line.jl")

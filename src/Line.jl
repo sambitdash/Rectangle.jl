@@ -19,6 +19,8 @@ Base.endof(l::Line) = l.m[:, 2]
 @inline ex(l::Line) = l.m[1, 2]
 @inline ey(l::Line) = l.m[2, 2]
 
+area(::Line{T}) where {T <:Number} = zero(T)
+
 function Line(lx::Number, ly::Number, rx::Number, ry::Number)
     t = promote(lx, ly, rx, ry)
     return Line{typeof(t[1])}(t...)

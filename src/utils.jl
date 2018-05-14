@@ -10,6 +10,8 @@ iszero(n::T) where {T <: Number} = -pcTol(T) <= n <= pcTol(T)
 @inline notvoid(x) = x
 @inline notvoid(::Void) = error("Invalid argument of Void type")
 
+const _nv = notvoid
+
 """
 ```
     parallelogram_area(m::Matrix) -> Float64

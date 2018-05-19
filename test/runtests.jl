@@ -1,6 +1,9 @@
 using Rectangle
 using Base.Test
 
+include("bsttest.jl")
+include("interval.jl")
+
 @testset "Rectangle" begin
     @test Rect(0.0, 0.0, 10, 10) == Rect(0, 0, 10, 10)
     @test Rect([0 10; 0 10]) == Rect(0, 0, 10, 10)
@@ -192,5 +195,3 @@ end
     @test intersect_axis_aligned(Line(0, 0, 10, 0), Line(0, 1, 0, 10), 1.0) == [0, 0]
     @test intersect_axis_aligned(Line(0, 0, 10, 0), Line(0, 2, 0, 10), 1.0) == []
 end
-
-include("bsttest.jl")

@@ -9,10 +9,9 @@ function tree_get_data(t::AbstractBST{K, V}) where {K, V}
     karr = Vector{K}()
     varr = Vector{V}()
     
-    _inorder(t.root, t) do n
-        push!(karr, n.k)
-        push!(varr, n.v)
-        return true
+    for p in collect(Iterator(t))
+        push!(karr, p[1])
+        push!(varr, p[2])
     end
     return karr, varr
 end

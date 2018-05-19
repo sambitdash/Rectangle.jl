@@ -1,7 +1,3 @@
-using IntervalTrees
-
-import Base: ==, union, intersect, promote_rule, convert, show
-
 struct Rect{T <: Number}
     m::Matrix{T}
     function Rect{T}(m::Matrix{T}) where {T <: Number}
@@ -19,13 +15,13 @@ function Rect(lx::Number, ly::Number, rx::Number, ry::Number)
     return Rect{typeof(t[1])}(t...)
 end
 
-convert(::Type{Rect{T}}, r::Rect{S}) where {T <: Number, S <: Number} =
+Base.convert(::Type{Rect{T}}, r::Rect{S}) where {T <: Number, S <: Number} =
     Rect{T}(Matrix{T}(r.m))
 
-promote_rule(::Type{Rect{T}}, ::Type{Rect{S}}) where {T <: Number, S <: Number} =
+Base.promote_rule(::Type{Rect{T}}, ::Type{Rect{S}}) where {T <: Number, S <: Number} =
     Rect{promote_type(T, S)}
 
-show(io::IO, r::Rect) = print(io, "Rect:[$(lx(r)) $(ly(r)) $(rx(r)) $(ry(r))]")
+Base.show(io::IO, r::Rect) = print(io, "Rect:[$(lx(r)) $(ly(r)) $(rx(r)) $(ry(r))]")
 
 lb(r) = lb(r.m)
 ru(r) = ru(r.m)
@@ -49,18 +45,18 @@ olines(r::Rect) = (ls = lines(r); [ls[1], ls[4], reverse(ls[2]), reverse(ls[3])]
 diags(r::Rect)  = [Line(lx(r), ly(r), rx(r), ry(r)), Line(rx(r), ly(r), lx(r), ry(r))]
 cg(r::Rect) = div(diags(r)[1], 1//2)
 
-function union(r1::Rect, r2::Rect)
+function Base.union(r1::Rect, r2::Rect)
     l = min.(lb(r1), lb(r2))
     r = max.(ru(r1), ru(r2))
     return Rect(l[1], l[2], r[1], r[2])
 end
 
-union(r1::Rect, r2::Rect, y...) = union(r1, union(r2, y...))
-union(r::Rect) = r
+Base.union(r1::Rect, r2::Rect, y...) = Base.union(r1, union(r2, y...))
+Base.union(r::Rect) = r
 
-intersect(r1::Rect, r2::Rect) = intersect(promote(r1, r2)...)
+Base.intersect(r1::Rect, r2::Rect) = intersect(promote(r1, r2)...)
 
-function intersect(r1::Rect{T}, r2::Rect{T}) where T <: Number
+function Base.intersect(r1::Rect{T}, r2::Rect{T}) where T <: Number
     l = max.(lb(r1), lb(r2))
     r = min.(ru(r1), ru(r2))
     l1 = l + pcTol(T)
@@ -68,8 +64,8 @@ function intersect(r1::Rect{T}, r2::Rect{T}) where T <: Number
     return Rect(l[1], l[2], r[1], r[2])
 end
 
-==(r1::Rect{T}, r2::Rect{T}) where {T <: Number} = all(abs.(r1.m - r2.m) .<= pcTol(T))
-==(r1::Rect, r2::Rect) = ==(promote(r1, r2)...)
+Base.: ==(r1::Rect{T}, r2::Rect{T}) where {T <: Number} = all(abs.(r1.m - r2.m) .<= pcTol(T))
+Base.: ==(r1::Rect, r2::Rect) = ==(promote(r1, r2)...)
 
 inside(p::Tuple{T, T}, r::Rect{T}) where T <: Number = all(r.m[:, 1] .<= p .<= r.m[:, 2])
 
@@ -284,12 +280,12 @@ end
 min_dist(r1::Rect, r2::Rect) = min_dist(promote(r1, r2)...)
 
 mutable struct OrderedRectMap{T <: Number, V, D}
-    data::IntervalMap{T, IntervalMap{T, V}}
+    data::IntervalTree{T, IntervalTree{T, V}}
     reverseMax::T
     function OrderedRectMap{T, V, D}(
         ;reverseMax::T1=zero(T)) where {T <: Number, V, D, T1 <: Number}
         @assert reverseMax >= zero(T) "Invalid max value for reverse ordering"
-        new(IntervalMap{T, IntervalMap{T, V}}(), convert(T, reverseMax))
+        new(IntervalTree{T, IntervalTree{T, V}}(), convert(T, reverseMax))
     end
 end
 
@@ -312,7 +308,7 @@ function create_ordered_map(rects::AbstractVector{Rect{T}},
     return map
 end
 
-function intersect(orm::OrderedRectMap{T1, V, D},
+function Base.intersect(orm::OrderedRectMap{T1, V, D},
                    rect::Rect{T2}, dX::T1, dY::T1;
                    dirX=0, dirY=0) where {T1 <: Number, T2 <: Number, V, D}
     dl = dirX > 0  ? zero(T1) : -dX
@@ -333,7 +329,7 @@ function intersect(orm::OrderedRectMap{T1, V, D},
 end
 
 
-function intersect(orm::OrderedRectMap{T1, V, D},
+function Base.intersect(orm::OrderedRectMap{T1, V, D},
                    r::Rect{T2}) where {T1 <: Number, T2 <: Number, V, D}
     rect = convert(Rect{T1}, r)
     dir = D
@@ -343,23 +339,23 @@ function intersect(orm::OrderedRectMap{T1, V, D},
         r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
     end
     r2 = coord(rect, odir)
-    imv1 = intersect(orm.data, (r1[1], r1[2]))
+    imv1 = intersect(orm.data, Interval(r1[1], r1[2]))
     iv1 = start(imv1)
     retr = Vector{Rect{T1}}()
     retv = Vector{V}()
     while !done(imv1, iv1)
         v1, iv1 = next(imv1, iv1)
-        imv2 = intersect(v1.value, (r2[1], r2[2]))
+        imv2 = intersect(v1[2], Interval(r2[1], r2[2]))
         iv2 = start(imv2)
         while !done(imv2, iv2)
             v2, iv2 = next(imv2, iv2)
             m = zeros(T1, (2,2))
             m[ dir, 1], m[ dir, 2] = (orm.reverseMax == zero(T1)) ?
-                                     (v1.first, v1.last) :
-                                     (orm.reverseMax - v1.last, orm.reverseMax - v1.first)
-            m[odir, 1], m[odir, 2] = v2.first, v2.last
+                                     (v1[1].lo, v1[1].hi) :
+                                     (orm.reverseMax - v1[1].hi, orm.reverseMax - v1[1].lo)
+            m[odir, 1], m[odir, 2] = v2[1].lo, v2[1].hi
             push!(retr, Rect{T1}(m))
-            push!(retv, v2.value)
+            push!(retv, v2[2])
         end
     end
     return retr, retv
@@ -374,18 +370,13 @@ function insert_rect!(orm::OrderedRectMap{T1, V, D},
     if orm.reverseMax != zero(T1)
         r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
     end
+    imv = get!(orm.data, Interval(r1[1], r1[2]), IntervalTree{T1, V}())
     r2 = coord(rect, odir)
-    imv = get(orm.data, (r1[1], r1[2]), nothing)
-    ret = nothing
-    if imv != nothing
-        ret = get(imv.value, (r2[1], r2[2]), nothing)
-        imv.value[(r2[1], r2[2])] = v
-    else
-        imv = IntervalMap{T1, V}()
-        imv[(r2[1], r2[2])] = v
-        orm.data[(r1[1], r1[2])] = imv
-    end
-    return ret
+    tv = get!(imv, Interval(r2[1], r2[2]), v)
+    tv === v && return nothing
+    tv = delete!(imv, Interval(r2[1], r2[2]))
+    imv[Interval(r2[1], r2[2])] = v
+    return tv
 end
 
 function delete_rect!(orm::OrderedRectMap{T1, V, D},
@@ -398,10 +389,8 @@ function delete_rect!(orm::OrderedRectMap{T1, V, D},
         r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
     end
     r2 = coord(rect, odir)
-    imv = get(orm.data, (r1[1], r1[2]), nothing)
-    imv === nothing && return nothing
-    ret = get(notvoid(imv).value, (r2[1], r2[2]), nothing)
-    delete!(notvoid(imv).value, (r2[1], r2[2]))
-    isempty(notvoid(imv).value) && delete!(orm.data, (r1[1], r1[2]))
-    return ret === nothing ? ret : notvoid(ret).value
+    imv = get(orm.data, Interval(r1[1], r1[2]), IntervalTree{T1, V}())
+    isempty(imv) && return nothing
+    ret = delete!(imv, Interval(r2[1], r2[2]))
+    return ret === nothing ? ret : ret[2]
 end

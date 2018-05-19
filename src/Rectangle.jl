@@ -17,11 +17,12 @@ export  Line,
         OrderedRectMapX, OrderedRectMapY,
             create_ordered_map, get_intersect_data, insert_rect!, delete_rect!,
         pcTol,
-        AbstractBST, RBTree, BinarySearchTree, Iterator
+        AbstractBST, RBTree, BinarySearchTree, Iterator, IntervalTree, Interval
 
 include("utils.jl")
 include("Line.jl")
-include("Rect.jl")
 include("bst.jl")
+include("interval.jl")
+include("Rect.jl")
 
 end # module

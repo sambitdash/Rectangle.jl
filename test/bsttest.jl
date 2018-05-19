@@ -98,6 +98,7 @@ end
     data = tree_get_data(t)
     @test data[1] == sort(a)
     @test delete!(t, 5) == (5 => 50)
+    @test delete!(t, 25) === nothing
     data = tree_get_data(t)
     @test data[2] == [10, 20, 30, 40, 60, 70, 80, 90, 100]
     empty!(t)

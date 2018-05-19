@@ -34,7 +34,8 @@ function intersectvalidity(t, res, q)
 end
 
 @testset "Interval Trees" begin
-
+    @test string(Interval(0, 1)) == "(0, 1)"
+    @test string(Rectangle.IntervalKey(Interval(0, 1))) == "(0, 1, 1)"
     a = [(26, 26), (25, 30), (19, 20), (17, 20), (16, 21),
          (15, 23), (8, 9),   (6,  10), ( 5,  8), ( 0,  3)]
     
@@ -54,6 +55,8 @@ end
     @test intersect(t, Interval(7, 18)) ==
         [Interval(5, 8)=>90,   Interval(6, 10)=>80, Interval(8, 9)=>70,
          Interval(15, 23)=>60, Interval(16, 21)=>50, Interval(17, 20)=>40]
+    t[Interval(16, 21)] = 110
+    @test 110 == t[Interval(16, 21)]
     @test intervalvalidity(t)
     @test parentvalidity(t)
     @test bstvalidity(t)
@@ -65,7 +68,8 @@ end
     data = tree_get_data(t)
     aa = [Interval(x...) for x in sort(a)]
     @test data[1] == aa
-    @test delete!(t, Interval(16, 21)) == (Interval(16,21)=>50)
+    @test delete!(t, Interval(16, 21)) == (Interval(16,21)=>110)
+    @test delete!(t, Interval(100, 110)) === nothing
     @test intervalvalidity(t)
     @test parentvalidity(t)
     @test bstvalidity(t)

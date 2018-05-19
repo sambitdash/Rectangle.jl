@@ -1,3 +1,5 @@
+import Base: ==
+
 struct Rect{T <: Number}
     m::Matrix{T}
     function Rect{T}(m::Matrix{T}) where {T <: Number}
@@ -64,8 +66,8 @@ function Base.intersect(r1::Rect{T}, r2::Rect{T}) where T <: Number
     return Rect(l[1], l[2], r[1], r[2])
 end
 
-Base.: ==(r1::Rect{T}, r2::Rect{T}) where {T <: Number} = all(abs.(r1.m - r2.m) .<= pcTol(T))
-Base.: ==(r1::Rect, r2::Rect) = ==(promote(r1, r2)...)
+==(r1::Rect{T}, r2::Rect{T}) where {T <: Number} = all(abs.(r1.m - r2.m) .<= pcTol(T))
+==(r1::Rect, r2::Rect) = ==(promote(r1, r2)...)
 
 inside(p::Tuple{T, T}, r::Rect{T}) where T <: Number = all(r.m[:, 1] .<= p .<= r.m[:, 2])
 

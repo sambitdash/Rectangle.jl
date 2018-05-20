@@ -394,5 +394,6 @@ function delete_rect!(orm::OrderedRectMap{T1, V, D},
     imv = get(orm.data, Interval(r1[1], r1[2]), IntervalTree{T1, V}())
     isempty(imv) && return nothing
     ret = delete!(imv, Interval(r2[1], r2[2]))
+    isempty(imv) && delete!(orm.data, Interval(r1[1], r1[2]))
     return ret === nothing ? ret : ret[2]
 end

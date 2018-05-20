@@ -77,6 +77,7 @@ are provided here. If you are looking out for more elaborate packages you can lo
 
 ### Binary Search Tree
 ### Red and Black Tree
+### Interval Tree
 
 ## Contribution
 

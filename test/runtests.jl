@@ -119,7 +119,7 @@ include("interval.jl")
         @test intersect(ormx, Rect(0, 0, 10, 10), 1, 0) ==
             ([Rect(0, 0, 10, 10)], fill(1, 1))
         @test intersect(ormx, Rect(1, 11, 9, 19), 1, 0) ==
-            (Rect{Int}[], Void[])
+            (Rect{Int}[], Nothing[])
     end
 
     

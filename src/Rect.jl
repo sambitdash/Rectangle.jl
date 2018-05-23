@@ -61,7 +61,7 @@ Base.intersect(r1::Rect, r2::Rect) = intersect(promote(r1, r2)...)
 function Base.intersect(r1::Rect{T}, r2::Rect{T}) where T <: Number
     l = max.(lb(r1), lb(r2))
     r = min.(ru(r1), ru(r2))
-    l1 = l + pcTol(T)
+    l1 = l .+ pcTol(T)
     any(l1 .>= r) && return nothing
     return Rect(l[1], l[2], r[1], r[2])
 end

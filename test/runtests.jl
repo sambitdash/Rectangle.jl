@@ -1,5 +1,6 @@
+using Compat
 using Rectangle
-using Base.Test
+using Compat.Test
 
 include("bsttest.jl")
 include("interval.jl")
@@ -142,7 +143,7 @@ end
     @test !isHorizontal(Line(0.0, 0, 10, 1)) 
     @test isVertical(Line(10, 0, 10, 10))
     @test !isVertical(Line(10, 0, 11.0, 10.0))
-    @test parallelogram_area([0 0; 10 0; 0 20]') == 200
+    @test parallelogram_area([0 10 0; 0 0 20]) == 200
     @test length(Line(0, 0, 3, 4)) == 5.0
     @test ratio(Line(0, 0, 5, 10.0), [1, 2]) == 0.2
     @test ratio(Line(0, 0, 5, 10.0), [2, 3]) == nothing

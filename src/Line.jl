@@ -140,7 +140,7 @@ function merge_axis_aligned(alines::Vector{Line{T}},
     length(alines) == 0 && return Line{T}[]
     pl = alines[1]
     m = copy(pl.m)
-    oaxis = axis == 1? 2 : 1
+    oaxis = axis == 1 ? 2 : 1
     vl = Vector{Line{T}}()
     for i = 2:length(alines)
         l = alines[i]

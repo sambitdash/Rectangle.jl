@@ -1,3 +1,6 @@
+using Compat
+using Compat.LinearAlgebra
+
 import Base: iszero
 
 pcTol(::Type{T}) where {T <: Integer}       = zero(T)
@@ -8,7 +11,7 @@ pcTol(::Type{T}) where {T <: Float64}       = T(1e-6)
 iszero(n::T) where {T <: Number} = -pcTol(T) <= n <= pcTol(T)
 
 @inline notvoid(x) = x
-@inline notvoid(::Void) = error("Invalid argument of Void type")
+@inline notvoid(::Nothing) = error("Invalid argument of Void type")
 
 const _nv = notvoid
 

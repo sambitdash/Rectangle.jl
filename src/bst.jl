@@ -1,3 +1,5 @@
+using Compat
+
 # Most algorithms are written keeping the concepts and pseudo code of
 # CLRS 3ed as close to as in the book. There has been minor deviations
 # taken at places for programming and architectural reasons. 
@@ -85,8 +87,8 @@ function node_print(t::AbstractBST{K, V},
     isnil(t, n) && return
     prefix *= prefix
     node_print(t, n.l, prefix, true)
-    const RED="\033[0;31m"
-    const NC="\033[0m"
+    RED="\033[0;31m"
+    NC="\033[0m"
     if n.red
         println(prefix, RED, n.k, NC)
     else
@@ -542,7 +544,7 @@ function Iterator(t::T, from::K, to::K) where {K, V, T <: AbstractBST{K, V}}
     return Iterator(t, fromN, toN)
 end
 
-Base.iteratorsize(it::Iterator) = Base.SizeUnknown()
+Compat.IteratorSize(it::Iterator) = Base.SizeUnknown()
 
 Base.start(it::Iterator) = it.from
 

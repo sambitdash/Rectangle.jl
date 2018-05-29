@@ -52,6 +52,8 @@ end
          Interval(8, 9)=>70,   Interval(15, 23)=>60, Interval(16, 21)=>50,
          Interval(17, 20)=>40, Interval(19, 20)=>30, Interval(25, 30)=>20,
          Interval(26, 26)=>10]
+    @test !intersects(t, Interval(4, 4))
+    @test intersects(t, Interval(7, 8))
     @test intersect(t, Interval(7, 18)) ==
         [Interval(5, 8)=>90,   Interval(6, 10)=>80, Interval(8, 9)=>70,
          Interval(15, 23)=>60, Interval(16, 21)=>50, Interval(17, 20)=>40]

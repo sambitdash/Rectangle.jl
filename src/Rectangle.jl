@@ -17,7 +17,8 @@ export  Line,
         OrderedRectMapX, OrderedRectMapY,
             create_ordered_map, get_intersect_data, insert_rect!, delete_rect!,
         pcTol,
-        AbstractBST, RBTree, BinarySearchTree, Iterator, IntervalTree, Interval
+        AbstractBST, RBTree, BinarySearchTree, Iterator, IntervalTree, Interval,
+        intersects
 
 include("utils.jl")
 include("Line.jl")

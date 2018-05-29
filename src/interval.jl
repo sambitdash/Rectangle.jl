@@ -74,12 +74,21 @@ https://algs4.cs.princeton.edu/93intersection/
     return lfound || found || rfound
 end
 
-@inline function Base.intersect(t::IntervalTree{K, V}, i::Interval{K}) where {K, V}
+@inline function Base.intersect(t::IntervalTree{K, V},
+                                i::Interval{K}) where {K, V}
     nodes = Vector{IntervalNode{K, V}}()
     _intersect(t, t.root, i, nodes)
     return [node.k.i => node.v for node in nodes]
 end
 
+@inline function intersects(t::IntervalTree{K, V}, i::Interval{K}) where {K, V}
+    x = t.root
+    while !isnil(t, x) && !overlaps(i, x.k.i)
+        x = isnil(t, x.l) || (x.l.k.submax < i.lo) ? x.r : x.l
+    end
+    return !isnil(t, x)
+end
+    
 _search(t::IntervalTree{K, V}, x::IntervalNode{K, V},
         i::Interval{K}) where {K, V} = _search(t, x, IntervalKey(i))
 

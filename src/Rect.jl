@@ -17,13 +17,16 @@ function Rect(lx::Number, ly::Number, rx::Number, ry::Number)
     return Rect{typeof(t[1])}(t...)
 end
 
-Base.convert(::Type{Rect{T}}, r::Rect{S}) where {T <: Number, S <: Number} =
+Base.convert(::Type{Rect{T}},
+             r::Rect{S}) where {T <: Number, S <: Number} =
     Rect{T}(Matrix{T}(r.m))
 
-Base.promote_rule(::Type{Rect{T}}, ::Type{Rect{S}}) where {T <: Number, S <: Number} =
+Base.promote_rule(::Type{Rect{T}},
+                  ::Type{Rect{S}}) where {T <: Number, S <: Number} =
     Rect{promote_type(T, S)}
 
-Base.show(io::IO, r::Rect) = print(io, "Rect:[$(lx(r)) $(ly(r)) $(rx(r)) $(ry(r))]")
+Base.show(io::IO, r::Rect) =
+    print(io, "Rect:[$(lx(r)) $(ly(r)) $(rx(r)) $(ry(r))]")
 
 lb(r) = lb(r.m)
 ru(r) = ru(r.m)
@@ -40,11 +43,15 @@ y(r) = coord(r, 2)
 c_lo(r, axis)   = r.m[axis, 1]
 c_hi(r, axis)   = r.m[axis, 2]
 
-hlines(r::Rect) = [Line(lx(r), ly(r), rx(r), ly(r)), Line(lx(r), ry(r), rx(r), ry(r))]
-vlines(r::Rect) = [Line(lx(r), ly(r), lx(r), ry(r)), Line(rx(r), ly(r), rx(r), ry(r))]
+hlines(r::Rect) =
+    [Line(lx(r), ly(r), rx(r), ly(r)), Line(lx(r), ry(r), rx(r), ry(r))]
+vlines(r::Rect) =
+    [Line(lx(r), ly(r), lx(r), ry(r)), Line(rx(r), ly(r), rx(r), ry(r))]
 lines(r::Rect)  = [hlines(r)..., vlines(r)...]
-olines(r::Rect) = (ls = lines(r); [ls[1], ls[4], reverse(ls[2]), reverse(ls[3])])
-diags(r::Rect)  = [Line(lx(r), ly(r), rx(r), ry(r)), Line(rx(r), ly(r), lx(r), ry(r))]
+olines(r::Rect) =
+    (ls = lines(r); [ls[1], ls[4], reverse(ls[2]), reverse(ls[3])])
+diags(r::Rect)  =
+    [Line(lx(r), ly(r), rx(r), ry(r)), Line(rx(r), ly(r), lx(r), ry(r))]
 cg(r::Rect) = div(diags(r)[1], 1//2)
 
 function Base.union(r1::Rect, r2::Rect)
@@ -66,13 +73,17 @@ function Base.intersect(r1::Rect{T}, r2::Rect{T}) where T <: Number
     return Rect(l[1], l[2], r[1], r[2])
 end
 
-==(r1::Rect{T}, r2::Rect{T}) where {T <: Number} = all(abs.(r1.m - r2.m) .<= pcTol(T))
+==(r1::Rect{T}, r2::Rect{T}) where {T <: Number} =
+    all(abs.(r1.m - r2.m) .<= pcTol(T))
 ==(r1::Rect, r2::Rect) = ==(promote(r1, r2)...)
 
-inside(p::Tuple{T, T}, r::Rect{T}) where T <: Number = all(r.m[:, 1] .<= p .<= r.m[:, 2])
+inside(p::Tuple{T, T}, r::Rect{T}) where T <: Number =
+    all(r.m[:, 1] .<= p .<= r.m[:, 2])
 
-inside(p::Tuple{T, T}, r::Rect{S}) where {T <: Number, S <: Number} =
-    (ST = promote_type(S, T); inside(convert(Tuple{ST, ST}, p), convert(Rect{ST}, r)))
+function inside(p::Tuple{T, T}, r::Rect{S}) where {T <: Number, S <: Number}
+    ST = promote_type(S, T)
+    inside(convert(Tuple{ST, ST}, p), convert(Rect{ST}, r))
+end
 
 inside(ri::Rect, ro::Rect) = intersect(ri, ro) == ri
 
@@ -80,11 +91,9 @@ intersects(r1::Rect, r2::Rect) = intersect(r1, r2) != nothing
 
 function intersects(r::Rect, l::Line)
     ml = l.m
-    (inside((ml[1, 1], ml[2, 1]), r) || inside((ml[1, 2], ml[2, 2]), r)) && return true
-    for tl in lines(r)
-        intersects(tl, l) && return true
-    end
-    return false
+    (inside((ml[1, 1], ml[2, 1]), r) ||
+        inside((ml[1, 2], ml[2, 2]), r)) && return true
+    return  any(intersects.(lines(r), l))
 end
 
 
@@ -93,19 +102,32 @@ w(r::Rect) = rx(r) - lx(r)
 area(r::Rect) = h(r) * w(r)
 
 perimeter(r::Rect) =  (s = h(r) + w(r); s + s)
-to_plot_shape(r::Rect) = ([lx(r), rx(r), rx(r), lx(r)], [ly(r), ly(r), ry(r), ry(r)])
+to_plot_shape(r::Rect) =
+    ([lx(r), rx(r), rx(r), lx(r)], [ly(r), ly(r), ry(r), ry(r)])
 
-xsort(r1::Rect, r2::Rect, reverse=false) = sortr(r1, r2, reverse=reverse, axis=1)
-ysort(r1::Rect, r2::Rect, reverse=false) = sortr(r1, r2, reverse=reverse, axis=2)
+xsort(r1::Rect, r2::Rect, reverse=false) =
+    sortr(r1, r2, reverse=reverse, axis=1)
+ysort(r1::Rect, r2::Rect, reverse=false) =
+    sortr(r1, r2, reverse=reverse, axis=2)
 
 sortr(r1::Rect, r2::Rect; reverse=false, axis=1) =
     (!reverse && r1.m[axis, 1] > r2.m[axis, 1]) ? (r2, r1) : (r1, r2)
 
-has_x_overlap(r1::Rect, r2::Rect) = has_overlap(r1::Rect, r2::Rect, axis=1)
-has_y_overlap(r1::Rect, r2::Rect) = has_overlap(r1::Rect, r2::Rect, axis=2)
+has_x_overlap(r1::Rect, r2::Rect; isopen=false) =
+    has_overlap(r1::Rect, r2::Rect, axis=1, isopen=isopen)
+has_y_overlap(r1::Rect, r2::Rect; isopen=false) =
+    has_overlap(r1::Rect, r2::Rect, axis=2, isopen=isopen)
 
-function has_overlap(r1::Rect, r2::Rect; axis=1)
-    r1, r2 = sortr(r1, r2, reverse=false, axis=axis)
+function has_overlap(ri1::Rect{T1}, ri2::Rect{T2};
+                     axis=1, isopen=false) where {T1, T2}
+    r1, r2 = promote(ri1, ri2)
+    T = typeof(r1.m[1, 1])
+    tol = isopen ? pcTol(T) : zero(T)
+    m = copy(r1.m)
+    m[axis, 1] += tol
+    m[axis, 2] -= tol
+    rt = Rect(m)
+    r1, r2 = sortr(rt, r2, reverse=false, axis=axis)
     return r1.m[axis, 1] <= r2.m[axis, 1] <= r1.m[axis, 2]
 end
 
@@ -121,8 +143,9 @@ Projects the rectangles along the X-axis and returns three parts of rectangles.
 
 Each portion is returned as a tuple.
 
-If the rectangle is part of the first rectangle, it's returned as the first element of the
-tuple. `nothing` is returned for a part when a portion is not available.
+If the rectangle is part of the first rectangle, it's returned as the first
+element of the tuple. `nothing` is returned for a part when a portion is not
+available.
 """
 projectX(r1::Rect, r2::Rect) = project(r1, r2, axis=1)
 
@@ -138,8 +161,9 @@ Projects the rectangles along the Y-axis and returns three parts of rectangles.
 
 Each portion is returned as a tuple.
 
-If the rectangle is part of the first rectangle, it's returned as the first element of the
-tuple. `nothing` is returned for a part when a portion is not available.
+If the rectangle is part of the first rectangle, it's returned as the first
+element of the tuple. `nothing` is returned for a part when a portion is not
+available.
 """
 projectY(r1::Rect, r2::Rect) = project(r1, r2, axis=2)
 
@@ -161,7 +185,8 @@ function project(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T <: Number
         l = Rect{T}(lm)
         low = !flip ? (l, nothing) : (nothing, l)
         # Non-overlap
-        l == lr && return low, (nothing, nothing), !flip ? (nothing, hr) : (hr, nothing)
+        l == lr &&
+            return low, (nothing, nothing), !flip ? (nothing, hr) : (hr, nothing)
     else
         low = nothing, nothing
     end
@@ -191,8 +216,8 @@ end
     visibleX(r1::Rect, r2::Rect) -> Rect
     visibleY(r1::Rect, r2::Rect) -> Rect
 ```
-Projects the rectangles along the X-axis (Y-axis) and returns a rectangle area which is
-completely visible from both rectangles.
+Projects the rectangles along the X-axis (Y-axis) and returns a rectangle area
+which is completely visible from both rectangles.
 
 `nothing` is returned when there is no overlap along the X-axis.
 """
@@ -230,17 +255,18 @@ end
 ```
     avg_min_dist(r1::Rect, r2::Rect) -> dx::Float64, dy::Float64
 ```
-Rectangles are essentially point sets. Hence, one can perceive existence of a minimum
-distance of one point in `r1` from `r2`. Similar, distance would also exist for every point
-in `r2` from `r1`. While, technically Euclidean distance metric can exist, the computation
-is fairly cumborsome. Here, we use the city block distance or L1-metric.
+Rectangles are essentially point sets. Hence, one can perceive existence of a
+minimum distance of one point in `r1` from `r2`. Similar, distance would also
+exist for every point in `r2` from `r1`. While, technically Euclidean distance
+metric can exist, the computation is fairly cumborsome. Here, we use the city
+block distance or L1-metric.
 
 `dx`: The distance in the x-direction
 `dy`: The distance in the y-direction
 
 The minimum distance will be `zero` when the rectangles are intersecting.
-The distance also will be lower in a specific direction if there is an overlap of the
-rectangles in that direction
+The distance also will be lower in a specific direction if there is an overlap of
+ the rectangles in that direction
 """
 function avg_min_dist(r1::Rect, r2::Rect)
     intersect(r1, r2) != nothing && return 0.0, 0.0
@@ -255,7 +281,8 @@ function avg_min_dist(r1::Rect, r2::Rect)
     dx = wg + (w1*a1 + w2*a2)/(2.0*(a1 + a2))
 
     l, ox, r = projectX(r1, r2)
-    ox != (nothing, nothing) && return get_overlapped_dist(l, r, w, a1, a2), dy
+    ox != (nothing, nothing) &&
+        return get_overlapped_dist(l, r, w, a1, a2), dy
     b, oy, t = projectY(r1, r2)
     oy != (nothing, nothing) && return dx, get_overlapped_dist(b, t, h, a1, a2)
     return dx, dy
@@ -270,7 +297,8 @@ Minimum distance or gap between two rectangles.
 `dx`: The distance in the x-direction
 `dy`: The distance in the y-direction
 
-The minimum distance will be `zero` when the rectangles are overlapping in a direction.
+The minimum distance will be `zero` when the rectangles are overlapping in a
+direction.
 """
 function min_dist(r1::Rect{T}, r2::Rect{T}) where T <: Number
     r1, r2 = xsort(r1, r2)
@@ -297,7 +325,9 @@ const OrderedRectMapY{T, V} = OrderedRectMap{T, V, dir=2}
 function create_ordered_map(rects::AbstractVector{Rect{T}},
                             values::AbstractVector{V};
                             dir::Int=1,
-                            reverseMax::T1=zero(T)) where {T <: Number, V, T1 <: Number}
+                            reverseMax::T1=zero(T)) where {T <: Number,
+                                                           V,
+                                                           T1 <: Number}
     map = OrderedRectMap{T, V, dir}(reverseMax=reverseMax)
     itr = start(rects)
     itv = start(values)
@@ -311,8 +341,8 @@ function create_ordered_map(rects::AbstractVector{Rect{T}},
 end
 
 function Base.intersect(orm::OrderedRectMap{T1, V, D},
-                   rect::Rect{T2}, dX::T1, dY::T1;
-                   dirX=0, dirY=0) where {T1 <: Number, T2 <: Number, V, D}
+                        rect::Rect{T2}, dX::T1, dY::T1;
+                        dirX=0, dirY=0) where {T1 <: Number, T2 <: Number, V, D}
     dl = dirX > 0  ? zero(T1) : -dX
     dr = dirX < 0  ? zero(T1) :  dX
     dd = dirY > 0  ? zero(T1) : -dY
@@ -332,7 +362,8 @@ end
 
 
 function Base.intersect(orm::OrderedRectMap{T1, V, D},
-                   r::Rect{T2}) where {T1 <: Number, T2 <: Number, V, D}
+                        r::Rect{T2};
+                        isopen = true) where {T1 <: Number, T2 <: Number, V, D}
     rect = convert(Rect{T1}, r)
     dir = D
     odir = dir == 1 ? 2 : 1
@@ -341,20 +372,21 @@ function Base.intersect(orm::OrderedRectMap{T1, V, D},
         r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
     end
     r2 = coord(rect, odir)
-    imv1 = intersect(orm.data, Interval(r1[1], r1[2]))
+    tol = isopen ? pcTol(T1) : zero(T1)
+    imv1 = intersect(orm.data, Interval(r1[1] + tol, r1[2] - tol))
     iv1 = start(imv1)
     retr = Vector{Rect{T1}}()
     retv = Vector{V}()
     while !done(imv1, iv1)
         v1, iv1 = next(imv1, iv1)
-        imv2 = intersect(v1[2], Interval(r2[1], r2[2]))
+        imv2 = intersect(v1[2], Interval(r2[1] + tol, r2[2] - tol))
         iv2 = start(imv2)
         while !done(imv2, iv2)
             v2, iv2 = next(imv2, iv2)
             m = zeros(T1, (2,2))
-            m[ dir, 1], m[ dir, 2] = (orm.reverseMax == zero(T1)) ?
-                                     (v1[1].lo, v1[1].hi) :
-                                     (orm.reverseMax - v1[1].hi, orm.reverseMax - v1[1].lo)
+            m[ dir, 1], m[ dir, 2] =
+                (orm.reverseMax == zero(T1)) ? (v1[1].lo, v1[1].hi) :
+                (orm.reverseMax - v1[1].hi, orm.reverseMax - v1[1].lo)
             m[odir, 1], m[odir, 2] = v2[1].lo, v2[1].hi
             push!(retr, Rect{T1}(m))
             push!(retv, v2[2])

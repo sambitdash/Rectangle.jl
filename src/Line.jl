@@ -98,9 +98,11 @@ If `l1` and `l2` intersect each other.
 """
 function intersects(l1::Line{T}, l2::Line{T}) where {T <: Real}
     l = [l1 l2; l2 l1]
-    t = [parallelogram_area(hcat(l1.m, l2.m[:, 1])) parallelogram_area(hcat(l1.m, l2.m[:, 2]));
-         parallelogram_area(hcat(l2.m, l1.m[:, 1])) parallelogram_area(hcat(l2.m, l1.m[:, 2]))]
-
+    l1l21 = parallelogram_area(hcat(l1.m, l2.m[:, 1]))
+    l1l22 = parallelogram_area(hcat(l1.m, l2.m[:, 2]))
+    l2l11 = parallelogram_area(hcat(l2.m, l1.m[:, 1]))
+    l2l12 = parallelogram_area(hcat(l2.m, l1.m[:, 2]))
+    t = [l1l21 l1l22; l2l11 l2l12]
     for i = 1:2
         for j = 1:2 
             if iszero(t[i, j])
@@ -110,8 +112,7 @@ function intersects(l1::Line{T}, l2::Line{T}) where {T <: Real}
             end
         end
     end
-    t[1, 1]*t[1, 2] < zero(T) && t[2, 1]*t[2, 2] < zero(T) && return true
-    return false
+    return t[1, 1]*t[1, 2] < zero(T) && t[2, 1]*t[2, 2] < zero(T)
 end
 
 intersects(l1::Line, l2::Line) = intersects(promote(l1, l2)...)

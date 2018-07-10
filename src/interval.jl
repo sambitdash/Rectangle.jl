@@ -88,44 +88,44 @@ end
     end
     return !isnil(t, x)
 end
-    
+
 _search(t::IntervalTree{K, V}, x::IntervalNode{K, V},
         i::Interval{K}) where {K, V} = _search(t, x, IntervalKey(i))
 
-@inline function Base.get(t::IntervalTree{K, V}, i::Interval{K}, v::V) where {K, V}
+@inline function Base.get(t::IntervalTree{K, V},
+                          i::Interval{K}, v::V) where {K, V}
     isempty(t) && return v
     n, d = _search(t, t.root, IntervalKey(i))
     d != 0 && return v
     return n.v
 end
 
-@inline function Base.get!(t::IntervalTree{K, V}, i::Interval{K}, v::V) where {K, V}
+@inline function Base.get!(t::IntervalTree{K, V},
+                           i::Interval{K}, v::V) where {K, V}
     if isempty(t)
         insert!(t, i, v)
         return v
     end
     n, d = _search(t, t.root, IntervalKey(i))
-    if d != 0
-        insert!(t, i, v)
-        return v
-    end
-    return n.v
-end
-
-@inline function Base.setindex!(t::IntervalTree{K, V}, v::V, i::Interval{K}) where {K, V}
-    if isempty(t)
-        insert!(t, i, v)
-        return v
-    end
-    n, d = _search(t, t.root, IntervalKey(i))
-    if d == 0
-        delete!(t, i)
-    end
+    d == 0 && return n.v
     insert!(t, i, v)
     return v
 end
 
-@inline function Base.getindex(t::IntervalTree{K, V}, i::Interval{K}) where {K, V}
+@inline function Base.setindex!(t::IntervalTree{K, V},
+                                v::V, i::Interval{K}) where {K, V}
+    if isempty(t)
+        insert!(t, i, v)
+        return v
+    end
+    n, d = _search(t, t.root, IntervalKey(i))
+    d == 0 && delete!(t, i)
+    insert!(t, i, v)
+    return v
+end
+
+@inline function Base.getindex(t::IntervalTree{K, V},
+                               i::Interval{K}) where {K, V}
     n, d = _search(t, t.root, IntervalKey(i))
     d != 0 && error("Index $i not found.")
     return n.v
@@ -173,7 +173,9 @@ end
     return 
 end
 
-function Base.insert!(t::IntervalTree{K, V}, k::IntervalKey{K}, v::V) where {K, V}
+function Base.insert!(t::IntervalTree{K, V},
+                      k::IntervalKey{K},
+                      v::V) where {K, V}
     z = RBNode(t, k, v)
     y = t.nil
     x = t.root
@@ -275,13 +277,8 @@ end
 @inline function Base.delete!(t::IntervalTree{K, V}, i::Interval{K}) where {K, V}
     isempty(t) && error("Cannot delete from empty tree")
     n, d = _search(t, t.root, i)
-    if d == 0
-        _delete!(t, n)
-        t.n -= 1
-        return n.k.i => n.v
-    else
-        return nothing
-    end
+    d != 0 && return nothing
+    _delete!(t, n)
+    t.n -= 1
+    return n.k.i => n.v
 end
-
-

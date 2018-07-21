@@ -8,6 +8,7 @@ include("interval.jl")
 @testset "Rectangle" begin
     @test Rect(0.0, 0.0, 10, 10) == Rect(0, 0, 10, 10)
     @test Rect([0 10; 0 10]) == Rect(0, 0, 10, 10)
+    @test Rect{Float32}(Rect(1, 2, 3, 4)) == Rect(1f0, 2f0, 3f0, 4f0)
     @test string(Rect(0, 0, 10, 10)) == "Rect:[0 0 10 10]"
     @test union(Rect(0, 0, 10, 5), Rect(11, -1, 12, 13)) == Rect(0, -1, 12, 13)
     @test intersect(Rect(0.0, 0, 10, 5), Rect(11, -1, 12, 13)) == nothing
@@ -122,13 +123,13 @@ include("interval.jl")
             (Rect{Int}[], Nothing[])
     end
 
-    
     @test hlines(Rect(0, 0, 10, 10)) == [Line(0, 0, 10, 0), Line(0, 10, 10, 10)]
     @test vlines(Rect(0, 0, 10, 10)) == [Line(0, 0, 0, 10), Line(10, 0, 10, 10)]
     @test lines(Rect(0, 0, 10, 10)) == [Line(0, 0, 10, 0), Line(0, 10, 10, 10),
                                         Line(0, 0, 0, 10), Line(10, 0, 10, 10)] 
     @test olines(Rect(0, 0, 10, 10)) == [Line(0, 0, 10, 0), Line(10, 0, 10, 10),
                                          Line(10, 10, 0, 10), Line(0, 10, 0, 0)]
+
     @test cg(Rect(0, 0, 10, 10)) == [5, 5]
     @test intersects(Rect(0, 0, 10, 10), Rect(5, 5, 15, 15))
     @test intersects(Rect(0, 0, 10, 10.0), Line(-1, -1, 11.0, 11))

@@ -1,3 +1,4 @@
+using Compat
 using Rectangle
 
 function tree_get_data(t::IntervalTree{K, V}) where {K, V}
@@ -43,7 +44,7 @@ end
 
     @test isempty(t)
 
-    for i=1:endof(a)
+    for i=1:lastindex(a)
         insert!(t, a[i][1], a[i][2], i*10)
     end
 

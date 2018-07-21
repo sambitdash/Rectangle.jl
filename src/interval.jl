@@ -1,3 +1,5 @@
+using Compat
+
 struct Interval{K}
     lo::K
     hi::K
@@ -9,9 +11,9 @@ end
 
 Interval(l::K, h::K) where K = Interval{K}(l, h)
 
-convert(::Type{Interval{K}}, t::Tuple{K, K}) where K = Interval(t...)
+Base.convert(::Type{Interval{K}}, t::Tuple{K, K}) where K = Interval(t...)
 
-promote_rule(::Type{Interval{T}}, ::Type{Interval{S}}) where {T, S} =
+Base.promote_rule(::Type{Interval{T}}, ::Type{Interval{S}}) where {T, S} =
     Interval{promote_type(T, S)}
 
 Base.show(io::IO, i::Interval) = Base.print(io, "($(i.lo), $(i.hi))")

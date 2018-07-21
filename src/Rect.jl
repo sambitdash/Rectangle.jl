@@ -2,23 +2,24 @@ import Base: ==
 
 struct Rect{T <: Number}
     m::Matrix{T}
-    function Rect{T}(m::Matrix{T}) where {T <: Number}
-        @assert size(m) == (2,2) && all(lb(m) .< ru(m)) "Invalid values."
+    function Rect{T}(m::Matrix{T}) where T <: Number
+        @assert size(m) == (2, 2) && all(lb(m) .< ru(m)) "Invalid values."
         new(m)
     end
-    Rect{T}(lx::T, ly::T, rx::T, ry::T) where {T <: Number} =
+    Rect{T}(lx::T, ly::T, rx::T, ry::T) where T <: Number =
         new(Matrix([min(lx, rx) max(lx, rx); min(ly, ry) max(ly, ry)]))
+    Rect{T}(r::Rect) where T <: Number = new(Matrix{T}(r.m))
 end
 
-Rect(m::Matrix{T}) where {T <: Number} = Rect{T}(m)
+Rect(m::Matrix{T}) where T <: Number = Rect{T}(m)
 
 function Rect(lx::Number, ly::Number, rx::Number, ry::Number)
     t = promote(lx, ly, rx, ry)
-    return Rect{typeof(t[1])}(t...)
+    T = typeof(t[1])
+    return Rect{T}(t...)
 end
 
-Base.convert(::Type{Rect{T}},
-             r::Rect{S}) where {T <: Number, S <: Number} =
+Base.convert(::Type{Rect{T}}, r::Rect{S}) where {T <: Number, S <: Number} =
     Rect{T}(Matrix{T}(r.m))
 
 Base.promote_rule(::Type{Rect{T}},
@@ -91,11 +92,10 @@ intersects(r1::Rect, r2::Rect) = intersect(r1, r2) != nothing
 
 function intersects(r::Rect, l::Line)
     ml = l.m
-    (inside((ml[1, 1], ml[2, 1]), r) ||
-        inside((ml[1, 2], ml[2, 2]), r)) && return true
-    return  any(intersects.(lines(r), l))
+    (inside((ml[1, 1], ml[2, 1]), r) || inside((ml[1, 2], ml[2, 2]), r)) &&
+        return true
+    return  any(intersects.(lines(r), Ref(l)))
 end
-
 
 h(r::Rect) = ry(r) - ly(r)
 w(r::Rect) = rx(r) - lx(r)
@@ -319,8 +319,8 @@ mutable struct OrderedRectMap{T <: Number, V, D}
     end
 end
 
-const OrderedRectMapX{T, V} = OrderedRectMap{T, V, dir=1}
-const OrderedRectMapY{T, V} = OrderedRectMap{T, V, dir=2}
+const OrderedRectMapX{T, V} = OrderedRectMap{T, V, 1}
+const OrderedRectMapY{T, V} = OrderedRectMap{T, V, 2}
 
 function create_ordered_map(rects::AbstractVector{Rect{T}},
                             values::AbstractVector{V};

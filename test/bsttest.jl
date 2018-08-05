@@ -87,6 +87,8 @@ end
     @test get!(t, 1, 2) == get(t, 1, 3)
     @test endswith(string(t), "Tree with 1 nodes.\nRoot at: 1.\n")
     @test get!(t, 2, 3) == get(t, 2, 4)
+    @test get!(t, 2, 4) == 3
+    @test get(t, 2, 4) == 3
     @test delete!(t, 1) == (1 => 2)
     @test delete!(t, 2) == (2 => 3)
     @test isempty(t)

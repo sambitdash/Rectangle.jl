@@ -81,8 +81,10 @@ end
 inside(p::Tuple{T, T}, r::Rect{T}) where T <: Number =
     all(r.m[:, 1] .<= p .<= r.m[:, 2])
 
-function inside(p::Tuple{T, T}, r::Rect{S}) where {T <: Number, S <: Number}
-    ST = promote_type(S, T)
+function inside(p::Tuple{T1, T2}, r::Rect{S}) where {T1 <: Number,
+                                                     T2 <: Number,
+                                                     S  <: Number}
+    ST = promote_type(S, T1, T2)
     inside(convert(Tuple{ST, ST}, p), convert(Rect{ST}, r))
 end
 

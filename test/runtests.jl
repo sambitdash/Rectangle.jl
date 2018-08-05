@@ -5,6 +5,12 @@ using Compat.Test
 include("bsttest.jl")
 include("interval.jl")
 
+@testset "Utils" begin
+    @test pcTol(Int) == 0
+    @test pcTol(Rational) == 0
+    @test pcTol(Float32) == 1f-3
+    @test pcTol(Float64) == 1e-6
+end
 @testset "Rectangle" begin
     @test Rect(0.0, 0.0, 10, 10) == Rect(0, 0, 10, 10)
     @test Rect([0 10; 0 10]) == Rect(0, 0, 10, 10)

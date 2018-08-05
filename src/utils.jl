@@ -10,9 +10,7 @@ pcTol(::Type{T}) where {T <: Float64}       = T(1e-6)
 
 iszero(n::T) where {T <: Number} = -pcTol(T) <= n <= pcTol(T)
 
-@inline notvoid(x) = x
-@inline notvoid(::Nothing) = error("Invalid argument of Void type")
-
+const notvoid = Compat.notnothing
 const _nv = notvoid
 
 """

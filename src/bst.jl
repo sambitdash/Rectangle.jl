@@ -221,6 +221,13 @@ function Base.insert!(t::BinarySearchTree, k::K, v::V) where {K, V}
     return
 end
 
+@inline function Base.get(t::BinarySearchTree{K, V}, k::K, v::V) where {K, V}
+    isempty(t) && return v
+    n, d = _search(t, t.root, k)
+    d != 0 && return v
+    return n.v
+end
+
 @inline function Base.get!(t::AbstractBST{K, V}, k::K, v::V) where {K, V}
     if isempty(t)
         insert!(t, k, v)

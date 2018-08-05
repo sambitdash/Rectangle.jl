@@ -84,6 +84,8 @@ end
     a = [4, 5, 3, 1, 10, 2, 7, 6, 8, 9]
     t = BinarySearchTree{Int, Int}()
 
+    @test get!(t, 1, 2) == get(t, 1, 3)
+    @test delete!(t, 1) == (1 => 2)
     @test isempty(t)
 
     for i in a

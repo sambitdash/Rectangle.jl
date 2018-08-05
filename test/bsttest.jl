@@ -98,7 +98,19 @@ end
     end
     @test collect(Iterator(t)) == [1=>10, 2=>20, 3=>30, 4=>40, 5=>50,
                                    6=>60, 7=>70, 8=>80, 9=>90, 10=>100]
-    @test collect(Iterator(t, 1, 3)) == [1=>10, 2=>20, 3=>30]
+
+    b = [i for i in 1:100]
+    for i = 1:50
+        n1 = rand(b)
+        n2 = rand(b)
+        b[n1], b[n2] = b[n2], b[n1]
+    end
+    s = BinarySearchTree{Int, Int}()
+    for i in b
+       insert!(s, i, 10i)
+    end
+    bb = [i for i in 11:20]
+    @test collect(Iterator(s, 11, 20)) == Pair.(bb, 10bb)
     @test length(t) == 10
     @test !isempty(t)
     @test maximum(t) == (10 =>100)

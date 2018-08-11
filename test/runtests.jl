@@ -205,3 +205,4 @@ end
     @test intersect_axis_aligned(Line(0, 0, 10, 0), Line(0, 1, 0, 10), 1.0) == [0, 0]
     @test intersect_axis_aligned(Line(0, 0, 10, 0), Line(0, 2, 0, 10), 1.0) == []
 end
+

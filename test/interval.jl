@@ -15,15 +15,16 @@ end
 
 function intervalvalidity(t::IntervalTree)
     it = Iterator(t)
-    n = start(it)
+    next = iterate(it)
     valid = false
-    while !done(it, n)
+    while next !== nothing
+        d, n = next
         valid = isnil(t, n) ||
             (isnil(t, n.l) && isnil(t, n.r) && n.k.submax == n.k.i.hi)   ||
             (isnil(t, n.l) && n.k.submax == max(n.k.i.hi, n.r.k.submax)) ||
             (isnil(t, n.r) && n.k.submax == max(n.k.i.hi, n.l.k.submax)) ||
             (n.k.submax == max(n.k.i.hi, n.l.k.submax, n.r.k.submax))    || break
-        d, n = next(it, n)
+        next = iterate(it, n)
     end
     return valid
 end

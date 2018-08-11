@@ -567,16 +567,12 @@ end
 
 Compat.IteratorSize(it::Iterator) = Base.SizeUnknown()
 
-Base.start(it::Iterator) = it.from
+Base.iterate(it::Iterator) = iterate(it, it.from)
 
-Base.next(it::Iterator{K, V, T, N},
-          n::N) where {K, V,
-                       T <: AbstractBST{K, V},
-                       N <: AbstractNode{K, V}} =
-                           ((n.k => n.v), _successor(n, it.tree))
-
-Base.done(it::Iterator{K, V, T, N},
-          n::N) where {K, V,
-                       T <: AbstractBST{K, V},
-                       N <: AbstractNode{K, V}} = (n === it.to)
-
+function Base.iterate(it::Iterator{K, V, T, N},
+                      n::N) where {K, V,
+                                   T <: AbstractBST{K, V},
+                                   N <: AbstractNode{K, V}}
+    n === it.to && return nothing
+    return ((n.k => n.v), _successor(n, it.tree))
+end

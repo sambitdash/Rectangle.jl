@@ -220,10 +220,13 @@ function Base.insert!(t::IntervalTree{K, V}, i::Interval{K}, v::V) where {K, V}
     return t
 end
 
-Base.next(it::Iterator{IntervalKey{K}, V,
-          IntervalTree{K, V}, IntervalNode{K, V}},
-          n::IntervalNode{K, V}) where {K, V} =
-              ((n.k.i => n.v), _successor(n, it.tree))
+function Base.iterate(it::Iterator{IntervalKey{K}, V,
+                                   IntervalTree{K, V},
+                                   IntervalNode{K, V}},
+                      n::IntervalNode{K, V}) where {K, V}
+    n === it.to && return nothing
+    return ((n.k.i => n.v), _successor(n, it.tree))
+end
 
 function Base.minimum(t::IntervalTree)
     isempty(t) && error("Empty tree cannot have a minimum")

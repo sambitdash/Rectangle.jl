@@ -331,12 +331,14 @@ function create_ordered_map(rects::AbstractVector{Rect{T}},
                                                            V,
                                                            T1 <: Number}
     map = OrderedRectMap{T, V, dir}(reverseMax=reverseMax)
-    itr = start(rects)
-    itv = start(values)
+    nr = iterate(rects)
+    nv = iterate(values)
     odir = dir == 1 ? 2 : 1
-    while !done(rects, itr)
-        (rect, itr) = next(rects,  itr)
-        (v2,   itv) = next(values, itv)
+    while nr !== nothing
+        rect, itr = nr
+        v2,   itv = nv
+        nr = iterate(rects, itr)
+        nv = iterate(values, itv)
         insert_rect!(map, rect, v2)
     end
     return map
@@ -379,15 +381,15 @@ function Base.intersect(orm::OrderedRectMap{T1, V, D},
     r2 = coord(rect, odir)
     tol = isopen ? pcTol(T1) : zero(T1)
     imv1 = intersect(orm.data, Interval(r1[1] + tol, r1[2] - tol))
-    iv1 = start(imv1)
     retr = Vector{Rect{T1}}()
     retv = Vector{V}()
-    while !done(imv1, iv1)
-        v1, iv1 = next(imv1, iv1)
+    nimv1 = iterate(imv1)
+    while nimv1 !== nothing
+        v1, iv1 = nimv1
         imv2 = intersect(v1[2], Interval(r2[1] + tol, r2[2] - tol))
-        iv2 = start(imv2)
-        while !done(imv2, iv2)
-            v2, iv2 = next(imv2, iv2)
+        nimv2 = iterate(imv2)
+        while nimv2 !== nothing
+            v2, iv2 = nimv2
             m = zeros(T1, (2,2))
             m[ dir, 1], m[ dir, 2] =
                 (orm.reverseMax == zero(T1)) ? (v1[1].lo, v1[1].hi) :
@@ -395,7 +397,9 @@ function Base.intersect(orm::OrderedRectMap{T1, V, D},
             m[odir, 1], m[odir, 2] = v2[1].lo, v2[1].hi
             push!(retr, Rect{T1}(m))
             push!(retv, v2[2])
+            nimv2 = iterate(imv2, iv2)
         end
+        nimv1 = iterate(imv1, iv1)
     end
     return retr, retv
 end

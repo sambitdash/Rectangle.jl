@@ -1,6 +1,6 @@
 using Compat
 using Rectangle
-using Compat.Test
+using Test
 
 include("bsttest.jl")
 include("interval.jl")

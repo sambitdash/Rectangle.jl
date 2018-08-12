@@ -1,5 +1,4 @@
-using Compat
-using Compat.Test
+using Test
 using Rectangle
 
 import Rectangle: _inorder, isnil

@@ -1,4 +1,3 @@
-using Compat
 using Rectangle
 
 function tree_get_data(t::IntervalTree{K, V}) where {K, V}

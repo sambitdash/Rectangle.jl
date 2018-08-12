@@ -1,5 +1,3 @@
-using Compat
-
 # Most algorithms are written keeping the concepts and pseudo code of
 # CLRS 3ed as close to as in the book. There has been minor deviations
 # taken at places for programming and architectural reasons. 
@@ -565,7 +563,7 @@ function Iterator(t::T, from::K, to::K) where {K, V, T <: AbstractBST{K, V}}
     return Iterator(t, fromN, toN)
 end
 
-Compat.IteratorSize(it::Iterator) = Base.SizeUnknown()
+Base.IteratorSize(it::Iterator) = Base.SizeUnknown()
 
 Base.iterate(it::Iterator) = iterate(it, it.from)
 

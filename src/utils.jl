@@ -1,5 +1,4 @@
-using Compat
-using Compat.LinearAlgebra
+using LinearAlgebra
 
 import Base: iszero
 
@@ -10,7 +9,7 @@ pcTol(::Type{T}) where {T <: Float64}       = T(1e-6)
 
 iszero(n::T) where {T <: Number} = -pcTol(T) <= n <= pcTol(T)
 
-const notvoid = Compat.notnothing
+const notvoid = Base.notnothing
 const _nv = notvoid
 
 """

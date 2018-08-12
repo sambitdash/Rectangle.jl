@@ -1,4 +1,4 @@
-import Base: ==, convert, promote_rule, length, reverse, show, div, start, endof
+import Base: ==, convert, promote_rule, length, reverse, show, div
 
 struct Line{T <: Number}
     m::Matrix{T}
@@ -11,8 +11,8 @@ end
 
 Line(m::Matrix{T}) where {T <: Number} = Line{T}(m)
 
-Base.start(l::Line) = l.m[:, 1]
-Base.endof(l::Line) = l.m[:, 2]
+start(l::Line) = l.m[:, 1]
+endof(l::Line) = l.m[:, 2]
 
 @inline sx(l::Line) = l.m[1, 1]
 @inline sy(l::Line) = l.m[2, 1]

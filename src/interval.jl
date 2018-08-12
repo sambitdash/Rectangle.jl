@@ -1,5 +1,3 @@
-using Compat
-
 struct Interval{K}
     lo::K
     hi::K

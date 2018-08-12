@@ -29,4 +29,4 @@ git:
 #  - julia -e 'Pkg.clone(pwd()); Pkg.build("Rectangle"); Pkg.test("Rectangle"; coverage=true)'
 after_success:
   # push coverage results to Codecov
-  - julia -e 'import Rectangle; cd(joinpath(dirname(pathof(Rectangle)), "..")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e 'import Rectangle; cd(joinpath(dirname(pathof(Rectangle)), "..")); using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'

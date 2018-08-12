@@ -1,4 +1,3 @@
-using Compat
 using Rectangle
 using Test
 

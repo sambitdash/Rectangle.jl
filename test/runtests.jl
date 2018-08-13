@@ -12,6 +12,8 @@ include("interval.jl")
 end
 @testset "Rectangle" begin
     @test Rect(0.0, 0.0, 10, 10) == Rect(0, 0, 10, 10)
+    r = Rect(0, 5, 10, 15)
+    @test r == Rect(lx(r), ly(r), rx(r), ry(r))
     @test Rect([0 10; 0 10]) == Rect(0, 0, 10, 10)
     @test Rect{Float32}(Rect(1, 2, 3, 4)) == Rect(1f0, 2f0, 3f0, 4f0)
     @test string(Rect(0, 0, 10, 10)) == "Rect:[0 0 10 10]"

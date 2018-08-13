@@ -108,8 +108,22 @@ end
     for i in b
        insert!(s, i, 10i)
     end
+    bb = [i for i in 1:10]
+    @test collect(Iterator(s, -3, 10)) == Pair.(bb, 10bb)
     bb = [i for i in 11:20]
-    @test collect(Iterator(s, 11, 20)) == Pair.(bb, 10bb)
+    @test collect(Iterator(s, bb[1], bb[end])) == Pair.(bb, 10bb)
+    bb = [i for i in 101:103]
+    @test collect(Iterator(s, bb[1], bb[end])) == []
+    bb = [i for i in 99:103]
+    @test collect(Iterator(s, bb[1], bb[end])) == [99 => 990, 100 => 1000]
+    bb = [i for i in -3:2]
+    @test collect(Iterator(s, bb[1], bb[end])) == [1 => 10, 2 => 20]
+    bb = [i for i in -3:0]
+    @test collect(Iterator(s, bb[1], bb[end])) == []
+    for i = 1:10
+        insert!(s, i, 10i)
+    end
+    @test collect(Iterator(s, 1, 2)) == [1 => 10, 1=>10, 2=>20, 2 => 20]
     @test length(t) == 10
     @test !isempty(t)
     @test maximum(t) == (10 =>100)

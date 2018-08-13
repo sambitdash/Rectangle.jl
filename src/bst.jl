@@ -545,6 +545,7 @@ function Iterator(t::T, from::K, to::K) where {K, V, T <: AbstractBST{K, V}}
         isnil(t, n) && return Iterator(t, t.nil, t.nil)
     end
     fromN = n
+    to < fromN && return Iterator(t, t.nil, t.nil)
     n, d = _search(t, t.root, to)
     nn = n
     if d == 0

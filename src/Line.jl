@@ -6,7 +6,8 @@ struct Line{T <: Number}
         @assert size(m) == (2, 2) "Invalid values."
         new(m)
     end
-    Line{T}(lx::T, ly::T, rx::T, ry::T) where {T <: Number} = new(Matrix([lx rx; ly ry]))
+    Line{T}(lx::T, ly::T, rx::T, ry::T) where {T <: Number} =
+        new(Matrix([lx rx; ly ry]))
 end
 
 Line(m::Matrix{T}) where {T <: Number} = Line{T}(m)
@@ -85,7 +86,8 @@ function ratio(l::Line{T}, p::Vector{T}) where {T <: Real}
 end
 
 ratio(l::Line{T}, p::Vector{S}) where {T <: Number, S <: Number} = 
-    (ST = promote_type(S, T); ratio(convert(Line{ST}, l), convert(Vector{ST}, p)))
+    (ST = promote_type(S, T);
+     ratio(convert(Line{ST}, l), convert(Vector{ST}, p)))
 
 div(l::Line{T}, r::R) where {T <: Number, R <: Real} =
     l.m[:, 1]*(one(R) - r) + l.m[:, 2]*r
@@ -125,14 +127,13 @@ intersects(l1::Line, l2::Line) = intersects(promote(l1, l2)...)
                        tol::T=pcTol(T)) -> Vector{Line{T}}
 ```
 Given an array of axis aligned lines, if the line ends touch the lines are 
-merged into a larger segment. Lines which are not touching the other lines are left 
-intact.
+merged into a larger segment. Lines which are not touching the other lines are
+left intact.
 
-`order` parameter can be in `:increasing` or `:decreasing` order in the direction of
-the axis. 
+`order` parameter can be in `:increasing` or `:decreasing` order in the direction
+of the axis. 
 
 `axis` parameter can be `1` for horizontal lines and `2` for vertical lines. 
-
 """
 function merge_axis_aligned(alines::Vector{Line{T}},
                             axis::Int=1,
@@ -148,7 +149,8 @@ function merge_axis_aligned(alines::Vector{Line{T}},
         if iszero(l.m[oaxis, 1] - pl.m[oaxis, 1]) 
             if order === :increasing && abs(l.m[axis, 1] - pl.m[axis, 2]) <= tol
                 m[axis, 2] = l.m[axis, 2]
-            elseif order === :decreasing && abs(l.m[axis, 2] - pl.m[axis, 1]) <= tol
+            elseif order === :decreasing &&
+                abs(l.m[axis, 2] - pl.m[axis, 1]) <= tol
                 m[axis, 1] = l.m[axis, 1]
             else
                 push!(vl, Line{T}(m))
@@ -164,7 +166,8 @@ function merge_axis_aligned(alines::Vector{Line{T}},
     return vl
 end
 
-function intersect_axis_aligned(hl::Line{T}, vl::Line{T}, tol::T) where T <: Number
+function intersect_axis_aligned(hl::Line{T},
+                                vl::Line{T}, tol::T) where T <: Number
     x, y  = sx(vl), sy(hl)
     if sx(hl) > ex(hl)
         hl = reverse(hl)
@@ -181,7 +184,9 @@ end
 
 function intersect_axis_aligned(hl::Line{T1},
                                 vl::Line{T2},
-                                tol::T=pcTol(T)) where {T1 <: Number, T2 <: Number, T <: Number}
+                                tol::T=pcTol(T)) where {T1 <: Number,
+                                                        T2 <: Number,
+                                                        T <: Number}
     ST = promote_type(T1, T2, T)
     return intersect_axis_aligned(convert(Line{ST}, hl),
                                   convert(Line{ST}, vl),

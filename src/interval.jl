@@ -1,6 +1,3 @@
-import Rectangle.RBTree
-import Rectangle.RBNode
-
 struct Interval{K}
     lo::K
     hi::K
@@ -24,10 +21,10 @@ function overlaps(i1::Interval{K}, i2::Interval{K}) where K
     return i1.lo <= i2.lo <= i1.hi
 end
 
-Base.isless(i1::Interval{K1}, i2::Interval{K2}) where {K1, K2} =
+Base.isless(i1::Interval{K1}, i2::Interval{K2}) where {K1, K2} = 
     Base.isless(promote(i1, i2)...)
 
-Base.isless(i1::Interval{K}, i2::Interval{K}) where {K} =
+Base.isless(i1::Interval{K}, i2::Interval{K}) where {K} = 
     (i1.lo < i2.lo) || (!(i1.lo < i2.lo || i2.lo < i1.lo) && (i1.hi < i2.hi))
 
 mutable struct IntervalKey{K}
@@ -152,7 +149,7 @@ end
 
     update_submax!(t, x)
     update_submax!(t, y)
-    return
+    return 
 end
 
 @inline function right_rotate!(t::IntervalTree{K, V},
@@ -173,7 +170,7 @@ end
 
     update_submax!(t, y)
     update_submax!(t, x)
-    return
+    return 
 end
 
 function Base.insert!(t::IntervalTree{K, V},
@@ -203,7 +200,7 @@ function Base.insert!(t::IntervalTree{K, V},
     while !isnil(t, zz)
         update_submax!(t, zz)
         zz = zz.p
-    end
+    end    
     _insert_fixup!(t, z)
     t.n += 1
     return t
@@ -273,7 +270,7 @@ end
         update_submax!(t, tx)
         tx = tx.p
         isnil(t, tx) && break
-    end
+    end    
     if !y_is_red
         _delete_fixup!(t, x)
     end

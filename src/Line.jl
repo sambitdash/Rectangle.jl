@@ -192,3 +192,31 @@ function intersect_axis_aligned(hl::Line{T1},
                                   convert(Line{ST}, vl),
                                   convert(ST, tol))
 end
+
+"""
+    `isless` function  that can be used to sort horizonal lines in descending
+    order (top to bottom).
+"""
+horiz_desc(l1::Line{T1}, l2::Line{T2}) where {T1 <: Number, T2 <: Number} =
+    horiz_desc(convert(Line{promote_type(T1, T2)}, l1),
+               convert(Line{promote_type(T1, T2)}, l2))
+
+@inline function horiz_desc(l1::Line{T}, l2::Line{T}) where T <: Number
+    dy = l1.m[2,1] - l2.m[2,1]
+    dy > pcTol(T) && return true
+    return iszero(dy) ? l1.m[1, 1] < l2.m[1, 1] : false
+end
+
+"""
+    `isless` function  that can be used to sort vertical lines in ascending
+    order (left to right).
+"""
+vert_asc(l1::Line{T1}, l2::Line{T2}) where {T1 <: Number, T2 <: Number} =
+    vert_asc(convert(Line{promote_type(T1, T2)}, l1),
+             convert(Line{promote_type(T1, T2)}, l2))
+
+@inline function vert_asc(l1::Line{T}, l2::Line{T}) where T <: Number
+    dx = l1.m[1,1] - l2.m[1,1]
+    dx < -pcTol(T) && return true
+    return iszero(dx) ? l1.m[2, 2] > l2.m[2, 2] : false
+end

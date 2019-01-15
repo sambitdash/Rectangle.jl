@@ -144,6 +144,17 @@ end
     @test intersects(Rect(0, 0, 10, 10.0), Line(-1, -1, 11.0, 11))
     @test intersects(Rect(0, 0, 10, 10), Line(5, -5, 11, 11))
     @test !intersects(Rect(0, 0, 10, 10), Line(11, 0, 11, 11))
+
+    hls = [Line(0, 5, 10, 5), Line(0, 4, 10, 4), Line(0, 3, 10, 3),
+           Line(0, 2, 10, 2), Line(0, 1, 10, 1), Line(0, 0, 10, 0f0)]
+
+    @test hline_xsection(Rect(1, 1.5, 9, 4.5), hls) == [2, 3, 4]
+
+    vls = [Line(0, 0, 0, 10), Line(1, 0, 1, 10), Line(2, 0, 2, 10),
+           Line(3, 0, 3, 10), Line(4, 0, 4, 10), Line(5, 0, 5, 10f0)]
+
+    @test vline_xsection(Rect(1.5, 1, 4.5, 9), vls) == [3, 4, 5]
+
 end
 
 @testset "Line" begin
@@ -205,5 +216,17 @@ end
     @test intersect_axis_aligned(Line(10, 0, 0, 0), Line(0, 10, 0, 1), 1) == [0, 0]
     @test intersect_axis_aligned(Line(0, 0, 10, 0), Line(0, 1, 0, 10), 1.0) == [0, 0]
     @test intersect_axis_aligned(Line(0, 0, 10, 0), Line(0, 2, 0, 10), 1.0) == []
+
+    @test !horiz_desc(Line(0, 0, 10, 0), Line(0, 0, 10.0, 0.0))
+    @test  horiz_desc(Line(0, 0, 10, 0), Line(1, 0, 10, 0))
+    @test  horiz_desc(Line(0, 1, 10, 1), Line(1, 0, 10, 0))
+    @test  horiz_desc(Line(0, 1f-4, 10, 1f-4), Line(1, 0, 10, 0))
+    @test !horiz_desc(Line(2, 1f-4, 10, 1f-4), Line(1, 0, 10, 0))
+
+    @test !vert_asc(Line(0, 0, 0, 10), Line(0, 0, 0.0, 10.0))
+    @test  vert_asc(Line(0, 1, 0, 11), Line(0, 0, 0, 10))
+    @test  vert_asc(Line(0, 0, 0, 10), Line(1, 0, 1, 8))
+    @test  vert_asc(Line(1f-4, 0, 0, 11), Line(0, 0, 0, 10))
+    @test !vert_asc(Line(1f-4, 0, 0, 9), Line(0, 0, 0, 10))
 end
 

@@ -2,7 +2,7 @@ struct Interval{K}
     lo::K
     hi::K
     function Interval{K}(l::K, h::K) where {K}
-        @assert l <= h "Invalid interval"
+        @assert !(h < l) "Invalid interval"
         new{K}(l, h)
     end
 end

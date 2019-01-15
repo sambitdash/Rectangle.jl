@@ -436,3 +436,34 @@ function delete_rect!(orm::OrderedRectMap{T1, V, D},
     isempty(imv) && delete!(orm.data, Interval(r1[1], r1[2]))
     return ret === nothing ? ret : ret[2]
 end
+
+function line_xsection(rect::Rect{T1}, ls::Vector{Line{T2}},
+                       flines::Function, flt::Function,
+                       o::Tuple{Int, Int}) where {T1 <: Number, T2 <: Number}
+    r = convert(Rect{T2}, rect)
+    l = flines(r)
+    xlines = Vector{Int}()
+    minv = searchsortedfirst(ls, l[o[1]], lt=flt)
+    maxv = searchsortedlast(ls,  l[o[2]], lt=flt)
+    for k = minv:maxv
+        !intersects(r, ls[k]) && continue
+        push!(xlines, k)
+    end
+    return xlines
+end
+
+"""
+    Given a Rectangle and a set of already sorted set of vertical lines ordered
+    left to right, provides the indices that intersect the rectangle.
+"""
+vline_xsection(r::Rect{T1}, vls::Vector{Line{T2}}) where {T1 <: Number,
+                                                          T2 <: Number} = 
+    line_xsection(r, vls, vlines, vert_asc, (1, 2))
+
+"""
+    Given a Rectangle and a set of a sorted set of horizontal lines ordered
+    top to bottom, provides the indices that intersect the rectangle.
+"""
+hline_xsection(r::Rect{T1}, hls::Vector{Line{T2}}) where {T1 <: Number,
+                                                          T2 <: Number} = 
+    line_xsection(r, hls, hlines, horiz_desc, (2, 1))

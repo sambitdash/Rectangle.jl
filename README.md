@@ -53,6 +53,12 @@ with `rect`.
 * `insert_rect!(ordered_rect_map, rect, value)` - Insert value associated with the `rect`.
 * `delete_rect!(ordered_rect_map, rect)` - Delete associated value for the `rect`. Returns
 the associated value.
+* `vline_xsection(rect, vlines)` - Given a Rectangle and a set of already 
+sorted set of vertical lines ordered left to right, provides the indices that 
+intersect the rectangle.
+* `hline_xsection(rect, hlines)` - Given a Rectangle and a set of a sorted set 
+of horizontal lines ordered top to bottom, provides the indices that intersect 
+the rectangle.
 
 ## Methods for 2-D Lines
 
@@ -66,6 +72,10 @@ a point.
 `r : (1-r)` otherwise `nothing`
 * `div(l, r)` - the point that divides the line `l` at ratio `r : (1-r)`
 * `intersects(l1, l2)` - if line `l1` intersects `l2`. 
+* `vert_asc(l1, l2)` - `isless` function  that can be used to sort vertical lines
+in ascending order (left to right).
+* `horiz_desc(l1, l2)` - `isless` function  that can be used to sort horizonal 
+lines in descending order (top to bottom).
 
 ## Methods for Commonly Used Data Structures
 

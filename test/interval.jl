@@ -35,6 +35,11 @@ function intersectvalidity(t, res, q)
 end
 
 @testset "Interval Trees" begin
+    @test Interval(3, 4)[1] == 3
+    @test Interval(3, 4)[2] == 4
+    @test_throws ErrorException Interval(3, 4)[0]
+    @test_throws ErrorException Interval(3, 4)[3]
+    
     @test string(Interval(0, 1)) == "(0, 1)"
     @test string(Rectangle.IntervalKey(Interval(0, 1))) == "(0, 1, 1)"
     a = [(26, 26), (25, 30), (19, 20), (17, 20), (16, 21),

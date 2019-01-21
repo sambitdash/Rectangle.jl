@@ -9,6 +9,9 @@ end
 
 Interval(l::K, h::K) where K = Interval{K}(l, h)
 
+Base.getindex(i::Interval, k::Int) =
+    k == 1 ? i.lo : k == 2 ? i.hi : error("Invalid index")
+
 Base.convert(::Type{Interval{K}}, t::Tuple{K, K}) where K = Interval(t...)
 
 Base.promote_rule(::Type{Interval{T}}, ::Type{Interval{S}}) where {T, S} =

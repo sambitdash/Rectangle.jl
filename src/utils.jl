@@ -7,7 +7,7 @@ pcTol(::Type{T}) where {T <: Rational}      = zero(T)
 pcTol(::Type{T}) where {T <: Float32}       = T(1f-3)
 pcTol(::Type{T}) where {T <: Float64}       = T(1e-6) 
 
-iszero(n::T) where {T <: Number} = -pcTol(T) <= n <= pcTol(T)
+iszero(n::T, tol::T=pcTol(T)) where {T <: Number} = -tol <= n <= tol
 
 const notvoid = Base.notnothing
 const _nv = notvoid

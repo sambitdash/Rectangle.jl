@@ -126,9 +126,9 @@ intersects(l1::Line, l2::Line) = intersects(promote(l1, l2)...)
                        order::Symbol=:increasing,
                        tol::T=pcTol(T)) -> Vector{Line{T}}
 ```
-Given an array of axis aligned lines, if the line ends touch the lines are 
-merged into a larger segment. Lines which are not touching the other lines are
-left intact.
+Given an array of axis aligned lines, if the line ends touch or have an overlap
+the lines are merged into a larger segment. Lines which are not touching the
+other lines are left intact.
 
 `order` parameter can be in `:increasing` or `:decreasing` order in the direction
 of the axis. 
@@ -146,12 +146,11 @@ function merge_axis_aligned(alines::Vector{Line{T}},
     vl = Vector{Line{T}}()
     for i = 2:length(alines)
         l = alines[i]
-        if iszero(l.m[oaxis, 1] - pl.m[oaxis, 1]) 
-            if order === :increasing && abs(l.m[axis, 1] - pl.m[axis, 2]) <= tol
-                m[axis, 2] = l.m[axis, 2]
-            elseif order === :decreasing &&
-                abs(l.m[axis, 2] - pl.m[axis, 1]) <= tol
-                m[axis, 1] = l.m[axis, 1]
+        if iszero(l.m[oaxis, 1] - pl.m[oaxis, 1], tol)
+            if order === :increasing && l.m[axis, 1] - pl.m[axis, 2] <= tol
+                m[axis, 2] = max(l.m[axis, 2],  pl.m[axis, 2])
+            elseif order === :decreasing && pl.m[axis, 1] - l.m[axis, 2] <= tol
+                m[axis, 1] = min(l.m[axis, 1], pl.m[axis, 1])
             else
                 push!(vl, Line{T}(m))
                 m = copy(l.m)
@@ -197,26 +196,34 @@ end
     `isless` function  that can be used to sort horizonal lines in descending
     order (top to bottom).
 """
-horiz_desc(l1::Line{T1}, l2::Line{T2}) where {T1 <: Number, T2 <: Number} =
+horiz_desc(l1::Line{T1},
+           l2::Line{T2},
+           tol::Union{T1, T2}=pcTol(promote_type(T1, T2))) where {T1 <: Number,
+                                                                  T2 <: Number} =
     horiz_desc(convert(Line{promote_type(T1, T2)}, l1),
-               convert(Line{promote_type(T1, T2)}, l2))
+               convert(Line{promote_type(T1, T2)}, l2), tol)
 
-@inline function horiz_desc(l1::Line{T}, l2::Line{T}) where T <: Number
+@inline function horiz_desc(l1::Line{T}, l2::Line{T},
+                            tol::T=pcTol(T)) where T <: Number
     dy = l1.m[2,1] - l2.m[2,1]
-    dy > pcTol(T) && return true
-    return iszero(dy) ? l1.m[1, 1] < l2.m[1, 1] : false
+    dy > tol && return true
+    return iszero(dy, tol) && l1.m[1, 1] - l2.m[1, 1] < -tol
 end
 
 """
     `isless` function  that can be used to sort vertical lines in ascending
     order (left to right).
 """
-vert_asc(l1::Line{T1}, l2::Line{T2}) where {T1 <: Number, T2 <: Number} =
+vert_asc(l1::Line{T1},
+         l2::Line{T2},
+         tol::Union{T1, T2}=pcTol(promote_type(T1, T2))) where {T1 <: Number,
+                                                                T2 <: Number} =
     vert_asc(convert(Line{promote_type(T1, T2)}, l1),
-             convert(Line{promote_type(T1, T2)}, l2))
+             convert(Line{promote_type(T1, T2)}, l2), tol)
 
-@inline function vert_asc(l1::Line{T}, l2::Line{T}) where T <: Number
+@inline function vert_asc(l1::Line{T}, l2::Line{T},
+                          tol::T=pcTol(T)) where T <: Number
     dx = l1.m[1,1] - l2.m[1,1]
-    dx < -pcTol(T) && return true
-    return iszero(dx) ? l1.m[2, 2] > l2.m[2, 2] : false
+    dx < -tol && return true
+    return iszero(dx, tol) && l1.m[2, 2] - l2.m[2, 2] > tol
 end

@@ -18,7 +18,7 @@ Base.show(io::IO, i::Interval) = Base.print(io, "($(i.lo), $(i.hi))")
 
 function overlaps(i1::Interval{K}, i2::Interval{K}) where K
     (i1, i2) = i1.lo < i2.lo ? (i1, i2) : (i2, i1)
-    return i1.lo <= i2.lo <= i1.hi
+    return !(i2.lo < i1.lo) && !(i1.hi < i2.lo)
 end
 
 Base.isless(i1::Interval{K1}, i2::Interval{K2}) where {K1, K2} = 

@@ -522,12 +522,12 @@ mutable struct Iterator{K, V, T, N}
     end
 end
 
-function Iterator(t::T, from::N=_minimum(t.root, t),
-                  to::N=t.nil) where {K, V,
-                                      T <: AbstractBST{K, V},
-                                      N <: AbstractNode{K, V}}
-    Iterator{K, V, T, N}(t, from, to)
-end
+Iterator(t::T,
+         from::N=_minimum(t.root, t),
+         to::N=t.nil) where {K, V,
+                             T <: AbstractBST{K, V},
+                             N <: AbstractNode{K, V}} =
+                                 Iterator{K, V, T, N}(t, from, to)
 
 function Iterator(t::T, from::K, to::K) where {K, V, T <: AbstractBST{K, V}}
     to < from && error("Cannot initialize iterator where `from > to`.")
@@ -565,6 +565,11 @@ end
 Base.IteratorSize(it::Iterator) = Base.SizeUnknown()
 
 Base.iterate(it::Iterator) = iterate(it, it.from)
+
+Base.eltype(it::Iterator{K, V, T, N}) where {K, V,
+                                             T <: AbstractBST{K, V},
+                                             N <: AbstractNode{K, V}} =
+                                                 Pair{K, V}
 
 function Base.iterate(it::Iterator{K, V, T, N},
                       n::N) where {K, V,

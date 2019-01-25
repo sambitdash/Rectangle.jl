@@ -226,6 +226,10 @@ function Base.iterate(it::Iterator{IntervalKey{K}, V,
     return ((n.k.i => n.v), _successor(n, it.tree))
 end
 
+Base.eltype(it::Iterator{IntervalKey{K}, V,
+                         IntervalTree{K, V},
+                         IntervalNode{K, V}}) where {K, V} = Pair{Interval{K}, V}
+
 function Base.minimum(t::IntervalTree)
     isempty(t) && error("Empty tree cannot have a minimum")
     n = _minimum(t.root, t)

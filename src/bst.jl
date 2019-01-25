@@ -126,7 +126,6 @@ function Base.minimum(t::AbstractBST)
     return n.k => n.v
 end
 
-
 @inline function left_rotate!(t::T,
                               x::N) where {T <: AbstractBST, N <: AbstractNode}
     y = x.r
@@ -168,7 +167,6 @@ end
     n, d = _search(t, t.root, k)
     if d == 0
         _delete!(t, n)
-        t.n -= 1
         return n.k => n.v
     else
         return nothing
@@ -285,6 +283,7 @@ function _delete!(t::BinarySearchTree, z::BSTNode)
         y.l = z.l
         y.l.p = y
     end
+    t.n -= 1
     return z
 end
 
@@ -337,7 +336,7 @@ function RBNode(t::RBTree{K, V}, k::K, v::V) where {K, V}
 end
 
 function Base.show(io::IO, t::AbstractBST)
-    println(io, "$(typeof(t)) Tree with $(t.n) nodes.")
+    println(io, "$(typeof(t)) Tree with $(length(t)) nodes.")
     !isnil(t, t.root) && println(io, "Root at: $(t.root.k).")
 end
 
@@ -449,6 +448,7 @@ end
     if !y_is_red
         _delete_fixup!(t, x)
     end
+    t.n -= 1
     return z
 end
 
@@ -574,4 +574,206 @@ function Base.iterate(it::Iterator{K, V, T},
                                                     T <: AbstractBST{K, V}}
     n === it.to && return nothing
     return ((n.k => n.v), _successor(n, it.tree))
+end
+
+#
+# Based on -
+# Random binary search tree with equal elements
+#   by Tomi A. Pasanen
+#
+# Published in Theoretical Computer Science 411 (2010) 3867–3872
+
+mutable struct RandomizedBSTNode{K, V} <: AbstractNode{K, V}
+    k::K
+    v::V
+    l::RandomizedBSTNode{K, V}
+    r::RandomizedBSTNode{K, V}
+    p::RandomizedBSTNode{K, V}
+    n::Int
+
+    function RandomizedBSTNode{K, V}() where {K, V}
+        self = new{K, V}()
+        self.n = 0
+        self.l = self.r = self.p = self
+    end
+end
+
+
+mutable struct RandomizedBinarySearchTree{K, V}  <: AbstractBST{K, V}
+    root::RandomizedBSTNode{K, V}
+    nil::RandomizedBSTNode{K, V}
+    unique::Bool
+
+    function RandomizedBinarySearchTree{K, V}() where {K, V}
+        self = new{K, V}()
+        nil = RandomizedBSTNode{K, V}()
+        @assert nil.l === nil && nil.r === nil && nil.n == 0
+        self.unique = false
+        self.root = self.nil = nil
+        return self
+    end
+end
+
+function RandomizedBSTNode(t::RandomizedBinarySearchTree{K, V}, k::K, v::V) where {K, V}
+    self = RandomizedBSTNode{K, V}()
+    self.k, self.v, self.l, self.r, self.p, self.n = k, v, t.nil, t.nil, t.nil, 0
+    return self
+end
+
+function _inorder2(f::Function, n::AbstractNode, t::AbstractBST)
+    if !isnil(t, n)
+        proceed = true
+        proceed = (proceed && _inorder2(f, n.l, t))
+        res = f(n, t)
+        if res isa Bool
+            proceed = (proceed && res)
+        end
+        proceed = (proceed && _inorder2(f, n.r, t))
+        return proceed
+    else
+        return true
+    end
+end
+
+function print_tree(n::RandomizedBinarySearchTree{K, V}) where {K, V}
+    if isempty(n)
+        println("[]")
+    else
+        println("Root = ", n.root.k, " and size = ", n.root.n)
+        _inorder2(print_node, n.root, n)
+    end
+end
+
+function print_node(n::RandomizedBSTNode{K, V}, t::RandomizedBinarySearchTree{K, V}) where {K, V}
+  str = "[$(n.k)], left = $(n.l == t.nil ? "NULL" : n.l.k), right = $(n.r == t.nil ? "NULL" : n.r.k), parent = $(n.p == t.nil ? "NIL" : n.p.k) and size=$(n.n)"
+  println(str)
+  return str
+end
+
+isnil(t::RandomizedBinarySearchTree, n::RandomizedBSTNode) = n === t.nil
+Base.empty!(t::RandomizedBinarySearchTree) = (t.root = t.nil)
+Base.length(t::RandomizedBinarySearchTree) = t.root.n
+
+function Base.insert!(t::RandomizedBinarySearchTree, k::K, v::V) where {K, V}
+    r = _insert!(t.root, k, v, t, t.unique)
+end
+
+@inline function _insert!(node::RandomizedBSTNode{K, V},
+                          k::K, v::V,
+                          t::RandomizedBinarySearchTree, unique::Bool=true) where {K, V}
+    rn = rand(0:node.n)
+    if rn == node.n
+        r = _insert_at_root!(node, k, v, unique, t)
+        _fix_node!(t, r)
+        return r
+    else
+        if k < node.k
+            node.l = _insert!(node.l, k, v, t, unique)
+            _fix_node!(t, node.l)
+            _fix_node!(t, node)
+        elseif !unique || (node.k < k)
+            node.r =  _insert!(node.r, k, v, t, unique)
+            _fix_node!(t, node.r)
+            _fix_node!(t, node)
+        else
+            unique && error("Key $k already exists.")
+        end
+    end
+    return node
+end
+
+@inline function _fix_node!(t::RandomizedBinarySearchTree{K, V}, n::RandomizedBSTNode{K, V}) where {K, V}
+    if n != t.nil
+        n.n = n.l.n + n.r.n + 1
+        n.l != t.nil ? n.l.p = n : nothing
+        n.r != t.nil ? n.r.p = n : nothing
+    end
+end
+
+@inline function _insert_at_root!(t::RandomizedBSTNode{K, V},
+                                 k::K, v::V, unique::Bool,
+                                 tree::RandomizedBinarySearchTree{K, V}) where {K, V}
+    node = RandomizedBSTNode(tree, k, v)
+    node.p = t.p
+    l, r = _split(t, k, v, unique, tree)
+    node.l, node.r = l, r
+    _fix_node!(tree, node)
+    if isempty(tree) || tree.root == t
+        tree.root = node
+    end
+    return node
+end
+
+# Given a k and a subtree - node returns (l, r) where all elements in l are < than k and all elements in r are > k
+@inline function _split(node::RandomizedBSTNode{K, V}, k::K, v::V, unique::Bool,
+                        t::RandomizedBinarySearchTree) where {K, V}
+    if node == t.nil
+       return t.nil, t.nil
+    end
+
+    if k < node.k
+        r = node
+        l, r.l = _split(node.l, k, v, unique, t)
+        _fix_node!(t, r.l)
+        _fix_node!(t, r)
+        _fix_node!(t, l)
+        return l, r
+    elseif !unique || node.k < k
+        l = node
+        l.r, r = _split(node.r, k, v, unique, t)
+        _fix_node!(t, l.r)
+        _fix_node!(t, l)
+        _fix_node!(t, r)
+        return l, r
+    else
+        unique && error("Key $k already exists.")
+    end
+end
+
+@inline function Base.delete!(t::RandomizedBinarySearchTree{K, V}, k::K) where {K, V}
+    isempty(t) && error("Cannot delete from empty tree")
+    x, s = _delete!(t.root, k, t)
+    return s != t.nil ? s.k => s.v : nothing
+end
+
+@inline function _delete!(node::RandomizedBSTNode{K, V}, k::K, t::RandomizedBinarySearchTree{K, V}) where {K, V}
+    found = t.nil
+    if node == t.nil
+        return t.nil, t.nil
+    end
+    if k < node.k
+        node.l, found = _delete!(node.l, k, t)
+    elseif k > node.k
+        node.r, found = _delete!(node.r, k, t)
+    else
+        found = node
+        node = _join(node.l,node.r, t)
+        if (found == t.root)
+            t.root = node
+            node.p = t.nil
+        end
+    end
+    _fix_node!(t, node)
+    return node, found
+end
+
+@inline function _join(l::RandomizedBSTNode{K, V}, r::RandomizedBSTNode{K, V}, t::RandomizedBinarySearchTree{K, V}) where {K, V}
+    m, n, total = l.n, r.n, l.n + r.n
+
+    if total == 0
+        return t.nil
+    end
+
+    rn = rand(0:total-1)
+    if (rn < m)
+        l.r = _join(l.r, r, t)
+        _fix_node!(t, l.r)
+        _fix_node!(t, l)
+        return l
+    else
+         r.l = _join(l, r.l, t)
+         _fix_node!(t, r.l)
+         _fix_node!(t, r)
+         return r
+    end
 end

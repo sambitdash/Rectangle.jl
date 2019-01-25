@@ -507,34 +507,32 @@ function _delete_fixup!(t::RBTree, x::RBNode)
     x.red = false
 end
 
-mutable struct Iterator{K, V, T, N} 
+mutable struct Iterator{K, V, T <: AbstractBST{K, V}} 
     tree::T
-    from::N
-    to::N
-    function Iterator{K, V, T, N}(t::T,
-                                  from::N,
-                                  to::N) where {K, V,
-                                                T <: AbstractBST{K, V},
-                                                N <: AbstractNode{K, V}}
-        @assert isnil(t, from) || isnil(t, to) || !(to.k < from.k)
+    from::AbstractNode{K, V}
+    to::AbstractNode{K, V}
+    function Iterator{K, V, T}(t::T,
+                               from::AbstractNode{K, V},
+                               to::AbstractNode{K, V}) where {K, V,
+                                                              T <: AbstractBST{K, V}}
+        @assert isnil(t, from)||isnil(t, to)||!(to.k < from.k)
         "`from` value cannot be more that the `to` value"
-        new{K, V, T, N}(t, from, to)
+        return new{K, V, T}(t, from, to)
     end
 end
 
 Iterator(t::T,
-         from::N=_minimum(t.root, t),
-         to::N=t.nil) where {K, V,
-                             T <: AbstractBST{K, V},
-                             N <: AbstractNode{K, V}} =
-                                 Iterator{K, V, T, N}(t, from, to)
+         from::AbstractNode{K, V}=_minimum(t.root, t),
+         to:: AbstractNode{K, V}=t.nil) where {K, V,
+                                               T <: AbstractBST{K, V}} =
+    Iterator{K, V, T}(t, from, to)
 
-function Iterator(t::T, from::K, to::K) where {K, V, T <: AbstractBST{K, V}}
+function Iterator(t::AbstractBST{K, V}, from::K, to::K) where {K, V}
     to < from && error("Cannot initialize iterator where `from > to`.")
     n, d = _search(t, t.root, from)
     if d == 0
         nn = _predecessor(n, t)
-        while nn.k == n.k && nn !== n
+        while !(nn.k < n.k || n.k < nn.k) && nn !== n
             n = nn
             nn = _predecessor(n, t)
         end
@@ -548,7 +546,7 @@ function Iterator(t::T, from::K, to::K) where {K, V, T <: AbstractBST{K, V}}
     nn = n
     if d == 0
         nn = _successor(n, t)
-        while nn.k == n.k && !isnil(t, nn)
+        while !(nn.k < n.k || n.k < nn.k) && !isnil(t, nn)
             n = nn
             nn = _successor(n, t)
         end
@@ -566,15 +564,14 @@ Base.IteratorSize(it::Iterator) = Base.SizeUnknown()
 
 Base.iterate(it::Iterator) = iterate(it, it.from)
 
-Base.eltype(it::Iterator{K, V, T, N}) where {K, V,
-                                             T <: AbstractBST{K, V},
-                                             N <: AbstractNode{K, V}} =
-                                                 Pair{K, V}
+Base.eltype(it::Iterator{K, V, T}) where {K, V,
+                                          T <: AbstractBST{K, V}} = Pair{K, V}
 
-function Base.iterate(it::Iterator{K, V, T, N},
-                      n::N) where {K, V,
-                                   T <: AbstractBST{K, V},
-                                   N <: AbstractNode{K, V}}
+Base.similar(it::Iterator) = Vector{eltype(it)}()
+
+function Base.iterate(it::Iterator{K, V, T},
+                      n::AbstractNode{K, V}) where {K, V,
+                                                    T <: AbstractBST{K, V}}
     n === it.to && return nothing
     return ((n.k => n.v), _successor(n, it.tree))
 end

@@ -19,8 +19,8 @@ abstract type AbstractNode{K, V} end
 abstract type AbstractBST{K, V} end
 
 Base.isless(n1::T, n2::T) where {T <:AbstractNode} = Base.isless(n1.k, n2.k)
-Base.isless(n::AbstractNode{K, V}, k::K) where {K, V} = isless(n.k, k)
-Base.isless(k::K, n::AbstractNode{K, V}) where {K, V} = isless(k, n.k)
+Base.isless(n::AbstractNode{K, V}, k::K) where {K, V} = isless(_k(n), k)
+Base.isless(k::K, n::AbstractNode{K, V}) where {K, V} = isless(k, _k(n))
 
 _k(n::AbstractNode) = n.k
 _v(n::AbstractNode) = n.v
@@ -88,9 +88,9 @@ function node_print(t::AbstractBST{K, V},
     RED="\033[0;31m"
     NC="\033[0m"
     if n.red
-        println(prefix, RED, n.k, NC)
+        println(prefix, RED, _k(n), NC)
     else
-        println(prefix, n.k)
+        println(prefix, _k(n))
     end
     node_print(t, n.r, prefix, false)
 end
@@ -117,13 +117,13 @@ Base.isempty(t::AbstractBST) = Base.length(t) == 0
 function Base.maximum(t::AbstractBST)
     isempty(t) && error("Empty tree cannot have a maximum")
     n = _maximum(t.root, t)
-    return n.k => n.v
+    return _k(n) => _v(n)
 end
 
 function Base.minimum(t::AbstractBST)
     isempty(t) && error("Empty tree cannot have a minimum")
     n = _minimum(t.root, t)
-    return n.k => n.v
+    return _k(n) => _v(n)
 end
 
 
@@ -169,7 +169,7 @@ end
     if d == 0
         _delete!(t, n)
         t.n -= 1
-        return n.k => n.v
+        return _k(n) => _v(n)
     else
         return nothing
     end
@@ -207,7 +207,7 @@ end
     isempty(t) && return v
     n, d = _search(t, t.root, k)
     d != 0 && return v
-    return n.v
+    return _v(n)
 end
 
 @inline function Base.get!(t::AbstractBST{K, V}, k::K, v::V) where {K, V}
@@ -220,7 +220,7 @@ end
         insert!(t, k, v)
         return v
     end
-    return n.v
+    return _v(n)
 end
 
 function BSTNode(t::BinarySearchTree{K, V}, k::K, v::V) where {K, V}
@@ -532,7 +532,7 @@ function Iterator(t::AbstractBST{K, V}, from::K, to::K) where {K, V}
     n, d = _search(t, t.root, from)
     if d == 0
         nn = _predecessor(n, t)
-        while !(nn.k < n.k || n.k < nn.k) && nn !== n
+        while !(_k(nn) < _k(n) || _k(n) < _k(nn)) && nn !== n
             n = nn
             nn = _predecessor(n, t)
         end
@@ -546,7 +546,7 @@ function Iterator(t::AbstractBST{K, V}, from::K, to::K) where {K, V}
     nn = n
     if d == 0
         nn = _successor(n, t)
-        while !(nn.k < n.k || n.k < nn.k) && !isnil(t, nn)
+        while !(_k(nn) < _k(n) || _k(n) < _k(nn)) && !isnil(t, nn)
             n = nn
             nn = _successor(n, t)
         end
@@ -573,5 +573,5 @@ function Base.iterate(it::Iterator{K, V, T},
                       n::AbstractNode{K, V}) where {K, V,
                                                     T <: AbstractBST{K, V}}
     n === it.to && return nothing
-    return ((n.k => n.v), _successor(n, it.tree))
+    return ((_k(n) => _v(n)), _successor(n, it.tree))
 end

@@ -532,7 +532,7 @@ function Iterator(t::AbstractBST{K, V}, from::K, to::K) where {K, V}
     n, d = _search(t, t.root, from)
     if d == 0
         nn = _predecessor(n, t)
-        while !(_k(nn) < _k(n) || _k(n) < _k(nn)) && nn !== n
+        while !t.unique && nn == n && !(_k(nn) < _k(n) || _k(n) < _k(nn)) 
             n = nn
             nn = _predecessor(n, t)
         end
@@ -546,7 +546,7 @@ function Iterator(t::AbstractBST{K, V}, from::K, to::K) where {K, V}
     nn = n
     if d == 0
         nn = _successor(n, t)
-        while !(_k(nn) < _k(n) || _k(n) < _k(nn)) && !isnil(t, nn)
+        while !t.unique && !isnil(t, nn) && !(_k(nn) < _k(n) || _k(n) < _k(nn)) 
             n = nn
             nn = _successor(n, t)
         end

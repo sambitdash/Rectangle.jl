@@ -18,7 +18,7 @@
 abstract type AbstractNode{K, V} end
 abstract type AbstractBST{K, V} end
 
-Base.isless(n1::T, n2::T) where {T <:AbstractNode} = Base.isless(n1.k, n2.k)
+Base.isless(n1::T, n2::T) where {T <: AbstractNode} = Base.isless(_k(n1), _k(n2))
 Base.isless(n::AbstractNode{K, V}, k::K) where {K, V} = isless(_k(n), k)
 Base.isless(k::K, n::AbstractNode{K, V}) where {K, V} = isless(k, _k(n))
 
@@ -246,11 +246,11 @@ end
     tn = ni = n
     while !isnil(t, tn)
         ni = tn
-        tn = k < ni.k ? ni.l : (!unique || (ni.k < k)) ? ni.r :
+        tn = k < _k(ni) ? ni.l : (!unique || _k(ni) < k) ? ni.r :
             unique && error("Key $k already exists.")
     end
     nn = BSTNode(t, k, v)
-    if k < ni.k
+    if k < _k(ni)
         _l!(t, ni, nn)
     else
         _r!(t, ni, nn)
@@ -338,7 +338,7 @@ end
 
 function Base.show(io::IO, t::AbstractBST)
     println(io, "$(typeof(t)) Tree with $(t.n) nodes.")
-    !isnil(t, t.root) && println(io, "Root at: $(t.root.k).")
+    !isnil(t, t.root) && println(io, "Root at: $(_k(t.root)).")
 end
 
 isnil(t::RBTree, n::RBNode) = n === t.nil
@@ -351,14 +351,14 @@ function Base.insert!(t::RBTree{K, V}, k::K, v::V) where {K, V}
 
     while x !== t.nil
         y = x
-        x = k < x.k ? x.l :
-            !t.unique || (x.k < k) ? x.r :
+        x = k < _k(x) ? x.l :
+            !t.unique || (_k(x) < k) ? x.r :
             t.unique && error("Key $k already exists.")
     end
     z.p = y
     if y === t.nil
         t.root = z
-    elseif k < y.k
+    elseif k < _k(y)
         y.l = z
     else
         y.r = z
@@ -515,7 +515,7 @@ mutable struct Iterator{K, V, T <: AbstractBST{K, V}}
                                from::AbstractNode{K, V},
                                to::AbstractNode{K, V}) where {K, V,
                                                               T <: AbstractBST{K, V}}
-        @assert isnil(t, from)||isnil(t, to)||!(to.k < from.k)
+        @assert isnil(t, from)||isnil(t, to)||!(_k(to) < _k(from))
         "`from` value cannot be more that the `to` value"
         return new{K, V, T}(t, from, to)
     end

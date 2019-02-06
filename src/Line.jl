@@ -98,19 +98,23 @@ div(l::Line{T}, r::R) where {T <: Number, R <: Real} =
 ```
 If `l1` and `l2` intersect each other. 
 """
-function intersects(l1::Line{T}, l2::Line{T}) where {T <: Real}
-    l = [l1 l2; l2 l1]
-    l1l21 = parallelogram_area(hcat(l1.m, l2.m[:, 1]))
-    l1l22 = parallelogram_area(hcat(l1.m, l2.m[:, 2]))
-    l2l11 = parallelogram_area(hcat(l2.m, l1.m[:, 1]))
-    l2l12 = parallelogram_area(hcat(l2.m, l1.m[:, 2]))
+function intersects(l1::Line{T}, l2::Line{T}) where T <: Real
+    l = Matrix{Line{T}}(undef, 2, 2)
+    l[1, 1] = l[2, 2] = l1
+    l[1, 2] = l[2, 1] = l2
+
+    l1l21 = parallelogram_area(hcat(l1.m, @view l2.m[:, 1]))
+    l1l22 = parallelogram_area(hcat(l1.m, @view l2.m[:, 2]))
+    l2l11 = parallelogram_area(hcat(l2.m, @view l1.m[:, 1]))
+    l2l12 = parallelogram_area(hcat(l2.m, @view l1.m[:, 2]))
     t = [l1l21 l1l22; l2l11 l2l12]
+
     for i = 1:2
         for j = 1:2 
             if iszero(t[i, j])
                 r = ratio(l[i, 1], l[i, 2].m[:, j])
                 r === nothing && continue
-                return zero(T) <= notvoid(r) <= one(T)
+                zero(T) <= notvoid(r) <= one(T) && return true
             end
         end
     end

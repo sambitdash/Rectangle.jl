@@ -174,6 +174,8 @@ end
     @test intersects(Line(0, 0, 10, 10), Line(5, 5, 0.0, 10))
     @test !intersects(Line(0, 0, 4, 4), Line(5, 5, 0.0, 10))
     @test !intersects(Line(0, 0, 4, 4), Line(10, 0, 0.0, 10))
+    @test intersects(Line(0, 0, 10, 10.0), Line(-1, -1, 11.0, 11))
+    @test intersects(Line(-1, -1, 11, 11.0), Line(0, 0, 10.0, 10))
     @test reverse(Line(0, 0, 10, 20)) == Line(10, 20, 0, 0)
     @test div(Line(0, 0, 10, 10), 1//20) == [1//2, 1//2]
     @test begin

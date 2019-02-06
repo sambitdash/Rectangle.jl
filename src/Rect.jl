@@ -46,7 +46,7 @@ hlines(r::Rect) =
     [Line(lx(r), ly(r), rx(r), ly(r)), Line(lx(r), ry(r), rx(r), ry(r))]
 vlines(r::Rect) =
     [Line(lx(r), ly(r), lx(r), ry(r)), Line(rx(r), ly(r), rx(r), ry(r))]
-lines(r::Rect)  = [hlines(r)..., vlines(r)...]
+lines(r::Rect) = append!(hlines(r), vlines(r))
 olines(r::Rect) =
     (ls = lines(r); [ls[1], ls[4], reverse(ls[2]), reverse(ls[3])])
 diags(r::Rect)  =
@@ -59,7 +59,7 @@ function Base.union(r1::Rect, r2::Rect)
     return Rect(l[1], l[2], r[1], r[2])
 end
 
-Base.union(r1::Rect, r2::Rect, y...) = Base.union(r1, union(r2, y...))
+Base.union(r1::Rect, r2::Rect, y::Rect...) = Base.union(r1, union(r2, y...))
 Base.union(r::Rect) = r
 
 Base.intersect(r1::Rect, r2::Rect) = intersect(promote(r1, r2)...)
@@ -88,13 +88,16 @@ end
 
 inside(ri::Rect, ro::Rect) = intersect(ri, ro) == ri
 
-intersects(r1::Rect, r2::Rect) = intersect(r1, r2) != nothing
+intersects(r1::Rect, r2::Rect) = intersect(r1, r2) !== nothing
 
 function intersects(r::Rect, l::Line)
     ml = l.m
     (inside((ml[1, 1], ml[2, 1]), r) || inside((ml[1, 2], ml[2, 2]), r)) &&
         return true
-    return  any(intersects.(lines(r), Ref(l)))
+    for tl in lines(r)
+        intersects(tl, l) && return true
+    end
+    return false
 end
 
 h(r::Rect) = ry(r) - ly(r)

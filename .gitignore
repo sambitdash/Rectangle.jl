@@ -1,3 +1,4 @@
+require.jl
 *.jl.cov
 *.jl.*.cov
 *.jl.mem

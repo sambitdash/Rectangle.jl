@@ -317,6 +317,7 @@ end
 RUN_BENCHMARK && using BenchmarkTools
 
 @static if RUN_BENCHMARK
+    using Rectangle: _search
 
     begin
         t = BinarySearchTree{Int, Int}()
@@ -327,14 +328,19 @@ RUN_BENCHMARK && using BenchmarkTools
             j = rand(1:10000000000)
             push!(a, j, i)
         end
-        print("Inserting random $n values into BinarySearchTree: \t")
-        @btime for i = 1:n
+        for i = 1:n
             insert!(t, a[i], i)
         end
-        print("Base.find call to find a number in array: \t\t")
+        print("Base.findfirst call to find a number in array: \t\t")
         @btime begin
-            find(x -> x == 15, a)
+            findfirst(x -> x == 15, a)
         end
+
+        print("_search a number in a BinarySearchTree : \t\t")
+        @btime begin
+            n, d = _search(t, t.root, 15)
+        end
+
         @assert parentvalidity(t)
         @assert bstvalidity(t)
         print("delete 50% from BinarySearchTree and add again: \t")
@@ -357,12 +363,15 @@ RUN_BENCHMARK && using BenchmarkTools
             j = rand(1:10000000000)
             push!(a, j, i)
         end
-        print("Inserting $n values into RBTree: \t\t\t")
-        @btime for i = 1:n
+        for i = 1:n
             insert!(t, a[i], i)
         end
         print("Base.find call to find a number in array: \t\t")
-        @btime find(x -> x == 15, a)
+        @btime findfirst(x -> x == 15, a)
+        print("_search a number in a RBTree : \t\t\t\t")
+        @btime begin
+            n, d = _search(t, t.root, 15)
+        end
         @assert parentvalidity(t)
         @assert bstvalidity(t)
         print("delete 50% from RBTree and add again: \t\t\t")

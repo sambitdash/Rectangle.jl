@@ -80,6 +80,12 @@ function rbvalidity(t::RBTree{K, V}) where {K, V}
 end
 
 @testset "Binary Search Trees" begin
+    t = BinarySearchTree{Int, Int}()
+    for i in 1:100
+        insert!(t, i, 10i)
+    end
+    @test depth(t) == 100
+    
     a = [4, 5, 3, 1, 10, 2, 7, 6, 8, 9]
     t = BinarySearchTree{Int, Int}()
 
@@ -241,6 +247,7 @@ end
         for i = 1:n
             insert!(t, a[i], i)
         end
+        @test depth(t) <= 2*log2(n)
         @test parentvalidity(t)
         @test bstvalidity(t)
         @test rbvalidity(t)
@@ -258,6 +265,7 @@ end
         @test rbvalidity(t)
         @test parentvalidity(t)
         @test bstvalidity(t)
+        @test depth(t) <= 2*log2(n)
     end
     empty!(t)
     @testset "Unique" begin
@@ -277,6 +285,7 @@ end
             push!(a, (b[i], i))
             push!(pa, (b[i] => i))
         end
+        @test depth(t) <= 2*log2(n)
         ka, kv = tree_get_data(t)
         aa = sort(a, lt= (x, y) -> x[1] < y[1])
         pa = sort(pa, lt= (x, y) -> x[1] < y[1])

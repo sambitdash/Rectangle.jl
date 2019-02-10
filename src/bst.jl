@@ -85,13 +85,7 @@ function node_print(t::AbstractBST{K, V},
     isnil(t, n) && return
     prefix *= prefix
     node_print(t, n.l, prefix, true)
-    RED="\033[0;31m"
-    NC="\033[0m"
-    if n.red
-        println(prefix, RED, _k(n), NC)
-    else
-        println(prefix, _k(n))
-    end
+    println(prefix, _k(n))
     node_print(t, n.r, prefix, false)
 end
 
@@ -113,6 +107,15 @@ end
 
 Base.length(t::AbstractBST) = t.n
 Base.isempty(t::AbstractBST) = Base.length(t) == 0
+
+function _depth(t::AbstractBST, n::AbstractNode)
+    isnil(t, _l(n)) && isnil(t, _r(n)) && return 1
+    ld = _depth(t, _l(n))
+    rd = _depth(t, _r(n))
+    return ld > rd ? ld + 1 : rd + 1
+end
+
+depth(t::AbstractBST) = _depth(t, t.root)
 
 function Base.maximum(t::AbstractBST)
     isempty(t) && error("Empty tree cannot have a maximum")
@@ -343,6 +346,23 @@ end
 
 isnil(t::RBTree, n::RBNode) = n === t.nil
 Base.empty!(t::RBTree) = (t.root = t.nil; t.n = 0; nothing)
+
+function node_print(t::RBTree{K, V},
+                    n::RBNode{K, V},
+                    prefix::String,
+                    left::Bool) where {K, V}
+    isnil(t, n) && return
+    prefix *= prefix
+    node_print(t, n.l, prefix, true)
+    RED="\033[0;31m"
+    NC="\033[0m"
+    if n.red
+        println(prefix, RED, _k(n), NC)
+    else
+        println(prefix, _k(n))
+    end
+    node_print(t, n.r, prefix, false)
+end
 
 function Base.insert!(t::RBTree{K, V}, k::K, v::V) where {K, V}
     z = RBNode(t, k, v)

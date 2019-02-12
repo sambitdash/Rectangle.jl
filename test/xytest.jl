@@ -2,7 +2,7 @@ using Test
 using Rectangle
 using Rectangle: isnil
 
-const VISUALIZATION=true
+const VISUALIZATION=false
 
 function xy_predicate(v, sdir)
     dir  = sdir == 1 ? 2 : 1

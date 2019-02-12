@@ -3,6 +3,7 @@ using Test
 
 include("bsttest.jl")
 include("interval.jl")
+include("xytest.jl")
 
 @testset "Utils" begin
     @test pcTol(Int) == 0

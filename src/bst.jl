@@ -15,8 +15,9 @@
 # No other operators are used in the code so that there are no implicit
 # overheads due to fallback options. 
 
+abstract type AbstractBinaryTree{K, V} end
 abstract type AbstractNode{K, V} end
-abstract type AbstractBST{K, V} end
+abstract type AbstractBST{K, V} <: AbstractBinaryTree{K, V} end
 
 Base.isless(n1::T, n2::T) where {T <: AbstractNode} = Base.isless(_k(n1), _k(n2))
 Base.isless(n::AbstractNode{K, V}, k::K) where {K, V} = isless(_k(n), k)
@@ -38,7 +39,7 @@ _r!(t::T, x::N, y::N) where {K, V,
 _p!(x::T, y::T) where {T <: AbstractNode} = (x.p = y)
 
 
-@inline function _extremum(dir::Function, n::AbstractNode, t::AbstractBST)
+@inline function _extremum(dir::Function, n::AbstractNode, t::AbstractBinaryTree)
     while true
         nn = dir(n)
         isnil(t, nn) && return n
@@ -63,7 +64,7 @@ _predecessor(x::AbstractNode, t::AbstractBST) = _pred_succ(_l, _maximum, x, t)
     return y
 end
 
-function _inorder(f::Function, n::AbstractNode, t::AbstractBST)
+function _inorder(f::Function, n::AbstractNode, t::AbstractBinaryTree)
     if !isnil(t, n)
         proceed = true
         proceed = (proceed && _inorder(f, n.l, t))
@@ -78,7 +79,7 @@ function _inorder(f::Function, n::AbstractNode, t::AbstractBST)
     end
 end
 
-function node_print(t::AbstractBST{K, V},
+function node_print(t::AbstractBinaryTree{K, V},
                     n::AbstractNode{K, V},
                     prefix::String,
                     left::Bool) where {K, V}
@@ -105,17 +106,17 @@ end
     end
 end
 
-Base.length(t::AbstractBST) = t.n
-Base.isempty(t::AbstractBST) = Base.length(t) == 0
+Base.length(t::AbstractBinaryTree) = t.n
+Base.isempty(t::AbstractBinaryTree) = Base.length(t) == 0
 
-function _depth(t::AbstractBST, n::AbstractNode)
+function _depth(t::AbstractBinaryTree, n::AbstractNode)
     isnil(t, _l(n)) && isnil(t, _r(n)) && return 1
     ld = _depth(t, _l(n))
     rd = _depth(t, _r(n))
     return ld > rd ? ld + 1 : rd + 1
 end
 
-depth(t::AbstractBST) = _depth(t, t.root)
+depth(t::AbstractBinaryTree) = _depth(t, t.root)
 
 function Base.maximum(t::AbstractBST)
     isempty(t) && error("Empty tree cannot have a maximum")

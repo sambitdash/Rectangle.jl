@@ -36,6 +36,9 @@ ly(r) = r.m[2, 1]
 rx(r) = r.m[1, 2]
 ry(r) = r.m[2, 2]
 
+xplot(r::Rect{T}) where T = T[lx(r), rx(r), rx(r), lx(r)]
+yplot(r::Rect{T}) where T = T[lx(r), lx(r), rx(r), rx(r)]
+
 coord(r, axis) = r.m[axis, :]
 x(r) = coord(r, 1)
 y(r) = coord(r, 2)

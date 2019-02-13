@@ -57,20 +57,6 @@ end
     import PyPlot
     using PyCall
     
-    function draw_tree(n, t, ax)
-        isnil(t, n) && return 
-        color = "#ff0000"
-        if n.dir == 1
-            vx, vy = [n.range...], [n.loc, n.loc] 
-        else
-            vx, vy = [n.loc, n.loc], [n.range...]
-        end
-        pyl = PyPlot.plt[:Line2D](vx, vy, color=color)
-        ax[:add_line](pyl)
-        draw_tree(n.l, t, ax)
-        draw_tree(n.r, t, ax)
-    end
-
     function plot_map(bimg, t)
         fig = PyPlot.gcf()
         PyPlot.clf()
@@ -90,10 +76,11 @@ end
         ax[:set_ylim](0f0, sz[1])
 
         img = map(x->x ? 0xff : 0x00, bimg)
-        
+        ls, vs = get_values(t)
+        for l in ls
+            img[ly(l):ry(l), lx(l):rx(l)] .= 0x7f
+        end
         imgplot = PyPlot.imshow(img)
-
-        draw_tree(t.root, t, ax)
         PyPlot.show()
     end
 end

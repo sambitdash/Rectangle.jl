@@ -12,13 +12,16 @@ end
 
 Line(m::Matrix{T}) where {T <: Number} = Line{T}(m)
 
-start(l::Line) = l.m[:, 1]
-endof(l::Line) = l.m[:, 2]
+start(l::Line) = @view l.m[:, 1]
+endof(l::Line) = @view l.m[:, 2]
 
 @inline sx(l::Line) = l.m[1, 1]
 @inline sy(l::Line) = l.m[2, 1]
 @inline ex(l::Line) = l.m[1, 2]
 @inline ey(l::Line) = l.m[2, 2]
+
+xplot(l::Line) = @view l.m[1, :]
+yplot(l::Line) = @view l.m[2, :]
 
 area(::Line{T}) where {T <:Number} = zero(T)
 

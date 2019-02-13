@@ -12,7 +12,7 @@ function xy_predicate(v, sdir)
 
     vloc = dir == 1 ? div(sz[dir], 4) : div(sz[dir], 2)
 
-    vloc <= 8 && return nothing, nothing, (0, 0, (0, 0), 0)
+    vloc <= 8 && return nothing, nothing, XYData(0, 0, (0, 0)), 0
     
     prange = parentindices(v)
     loc = vloc + prange[dir][1] - 1
@@ -24,7 +24,7 @@ function xy_predicate(v, sdir)
 
     return (()->xy_predicate(nvl, dir),
             ()->xy_predicate(nvr, dir),
-            (dir, loc, range, 0))
+            XYData(dir, loc, range), 0)
 end
 
 @testset "XY Tree Tests" begin

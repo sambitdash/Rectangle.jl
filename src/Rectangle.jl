@@ -20,7 +20,7 @@ export  Line,
             create_ordered_map, get_intersect_data, insert_rect!, delete_rect!,
         pcTol,
             AbstractBinaryTree, AbstractBST, RBTree, BinarySearchTree, Iterator,
-            IntervalTree, Interval, intersects, depth, XYTree, create_xy_tree,
+            IntervalTree, Interval, intersects, depth, XYTree, XYData,
             get_values
 
 include("utils.jl")

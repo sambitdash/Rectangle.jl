@@ -78,7 +78,7 @@ end
                                 i::Interval{K}) where {K, V}
     nodes = Vector{IntervalNode{K, V}}()
     _intersect(t, t.root, i, nodes)
-    return [node.k.i => node.v for node in nodes]
+    return map(x-> x.k.i=>x.v, nodes)
 end
 
 @inline function intersects(t::IntervalTree{K, V}, i::Interval{K}) where {K, V}

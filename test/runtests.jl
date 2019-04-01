@@ -31,8 +31,8 @@ end
     @test area(Rect(0, 0, 1, 10))      == 10
     @test perimeter(Rect(0, 0, 1//2, 1)) == 3
 
-    @test x(Rect(0, 5, 10, 10)) == [0, 10]
-    @test y(Rect(0, 5, 10, 10)) == [5, 10]
+    @test x(Rect(0, 5, 10, 10)) == (0, 10)
+    @test y(Rect(0, 5, 10, 10)) == (5, 10)
 
     @test  has_x_overlap(Rect(0.0, 0.0, 10.0, 1.0), Rect(3.0, 2.0, 11.0, 4.0))
     @test !has_y_overlap(Rect(0.0, 0.0, 10.0, 1.0), Rect(3.0, 2.0, 11.0, 4.0))
@@ -140,7 +140,7 @@ end
     @test olines(Rect(0, 0, 10, 10)) == [Line(0, 0, 10, 0), Line(10, 0, 10, 10),
                                          Line(10, 10, 0, 10), Line(0, 10, 0, 0)]
 
-    @test cg(Rect(0, 0, 10, 10)) == [5, 5]
+    @test cg(Rect(0, 0, 10, 10)) == (5, 5)
     @test intersects(Rect(0, 0, 10, 10), Rect(5, 5, 15, 15))
     @test intersects(Rect(0, 0, 10, 10.0), Line(-1, -1, 11.0, 11))
     @test intersects(Rect(0, 0, 10, 10), Line(5, -5, 11, 11))
@@ -155,22 +155,29 @@ end
            Line(3, 0, 3, 10), Line(4, 0, 4, 10), Line(5, 0, 5, 10f0)]
 
     @test vline_xsection(Rect(1.5, 1, 4.5, 9), vls) == [3, 4, 5]
-
 end
 
 @testset "Line" begin
+    @test begin
+        l = Line(0, 0, 10, 20)
+        start(l) == (start(l, 1), start(l, 2))
+    end
+    @test begin
+        l = Line(0, 0, 10, 20)
+        endof(l) == (endof(l, 1), endof(l, 2))
+    end
     @test Line([0 10; 0 10]) == Line(0.0, 0, 10, 10)
     @test string(Line(0, 0, 10, 10)) == "Line:[0 0 10 10]"
     @test isHorizontal(Line(0.0, 0, 10, 0))
     @test !isHorizontal(Line(0.0, 0, 10, 1)) 
     @test isVertical(Line(10, 0, 10, 10))
     @test !isVertical(Line(10, 0, 11.0, 10.0))
-    @test parallelogram_area([0 10 0; 0 0 20]) == 200
+    @test parallelogram_area((0, 0), (10, 0), (0, 20)) == 200
     @test length(Line(0, 0, 3, 4)) == 5.0
-    @test Rectangle.ratio(Line(0, 0, 5, 10.0), [1, 2]) == 0.2
-    @test Rectangle.ratio(Line(0, 0, 5, 10.0), [2, 3]) == nothing
-    @test Rectangle.ratio(Line(0.0, 0, 0, 10), [0, 5]) == 0.5
-    @test Rectangle.ratio(Line(0.0, 0, 0, 10), [1, 5]) == nothing
+    @test Rectangle.ratio(Line(0, 0, 5, 10.0), (1, 2)) == 0.2
+    @test Rectangle.ratio(Line(0, 0, 5, 10.0), (2, 3)) == nothing
+    @test Rectangle.ratio(Line(0.0, 0, 0, 10), (0, 5)) == 0.5
+    @test Rectangle.ratio(Line(0.0, 0, 0, 10), (1, 5)) == nothing
     @test intersects(Line(0, 0, 10, 10), Line(10, 0, 0.0, 10))
     @test intersects(Line(0, 0, 10, 10), Line(5, 5, 0.0, 10))
     @test !intersects(Line(0, 0, 4, 4), Line(5, 5, 0.0, 10))
@@ -178,14 +185,14 @@ end
     @test intersects(Line(0, 0, 10, 10.0), Line(-1, -1, 11.0, 11))
     @test intersects(Line(-1, -1, 11, 11.0), Line(0, 0, 10.0, 10))
     @test reverse(Line(0, 0, 10, 20)) == Line(10, 20, 0, 0)
-    @test div(Line(0, 0, 10, 10), 1//20) == [1//2, 1//2]
+    @test div(Line(0, 0, 10, 10), 1//20) == (1//2, 1//2)
     @test begin
         l = Line(1, 2, 3, 4)
         l == Line(sx(l), sy(l), ex(l), ey(l))
     end
     @test begin
         l = Line(1, 2, 3, 4)
-        start(l) == [sx(l), sy(l)] && endof(l) == [ex(l), ey(l)]
+        start(l) == (sx(l), sy(l)) && endof(l) == (ex(l), ey(l))
     end
     @test begin
         a = [Line(0, 0, 10, 0), Line(10, 0, 20, 0), Line(20, 0, 30, 0), Line(40, 0, 50, 0),

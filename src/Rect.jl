@@ -1,24 +1,31 @@
 struct Rect{T <: Number}
-    m::Matrix{T}
+    lxv::T
+    lyv::T
+    rxv::T
+    ryv::T
     function Rect{T}(m::Matrix{T}) where T <: Number
-        @assert size(m) == (2, 2) && all(lb(m) .< ru(m)) "Invalid values."
-        new(m)
+        @assert size(m) == (2, 2) "Invalid values"
+        return Rect{T}(m[1, 1], m[2, 1], m[1, 2], m[2, 2])
     end
-    Rect{T}(lx::T, ly::T, rx::T, ry::T) where T <: Number =
-        new(Matrix([min(lx, rx) max(lx, rx); min(ly, ry) max(ly, ry)]))
-    Rect{T}(r::Rect) where T <: Number = new(Matrix{T}(r.m))
+
+    Rect{T}(lxv::T, lyv::T, rxv::T, ryv::T) where T <: Number = 
+        new{T}(min(lxv, rxv), min(lyv, ryv), max(lxv, rxv), max(lyv, ryv))
+
+    Rect{T}(r::Rect) where T <: Number =
+        Rect{T}(convert(T, r.lxv), convert(T, r.lyv),
+                convert(T, r.rxv), convert(T, r.ryv))
 end
 
+matrix(r::Rect) = [r.lxv r.rxv; r.lyv r.ryv]
 Rect(m::Matrix{T}) where T <: Number = Rect{T}(m)
 
 function Rect(lx::Number, ly::Number, rx::Number, ry::Number)
     t = promote(lx, ly, rx, ry)
-    T = typeof(t[1])
-    return Rect{T}(t...)
+    return Rect{eltype(t)}(t...)
 end
 
-Base.convert(::Type{Rect{T}}, r::Rect{S}) where {T <: Number, S <: Number} =
-    Rect{T}(Matrix{T}(r.m))
+Base.convert(::Type{Rect{T}}, r::Rect{S}) where {T <: Number, S <: Number} = 
+    T === S ? r : Rect{T}(r)
 
 Base.promote_rule(::Type{Rect{T}},
                   ::Type{Rect{S}}) where {T <: Number, S <: Number} =
@@ -27,23 +34,21 @@ Base.promote_rule(::Type{Rect{T}},
 Base.show(io::IO, r::Rect) =
     print(io, "Rect:[$(lx(r)) $(ly(r)) $(rx(r)) $(ry(r))]")
 
-lb(r) = lb(r.m)
-ru(r) = ru(r.m)
-lb(m::Matrix) = m[:, 1]
-ru(m::Matrix) = m[:, 2]
-lx(r) = r.m[1, 1]
-ly(r) = r.m[2, 1]
-rx(r) = r.m[1, 2]
-ry(r) = r.m[2, 2]
+lb(r) = (r.lxv, r.lyv)
+ru(r) = (r.rxv, r.ryv)
+lx(r) = r.lxv
+ly(r) = r.lyv
+rx(r) = r.rxv
+ry(r) = r.ryv
 
 xplot(r::Rect{T}) where T = T[lx(r), rx(r), rx(r), lx(r)]
 yplot(r::Rect{T}) where T = T[lx(r), lx(r), rx(r), rx(r)]
 
-coord(r, axis) = r.m[axis, :]
+coord(r, axis) = axis == 1 ? (r.lxv, r.rxv) : (r.lyv, r.ryv)
 x(r) = coord(r, 1)
 y(r) = coord(r, 2)
-c_lo(r, axis)   = r.m[axis, 1]
-c_hi(r, axis)   = r.m[axis, 2]
+c_lo(r, axis)   = axis == 1 ? r.lxv : r.lyv
+c_hi(r, axis)   = axis == 1 ? r.rxv : r.ryv
 
 hlines(r::Rect) =
     [Line(lx(r), ly(r), rx(r), ly(r)), Line(lx(r), ry(r), rx(r), ry(r))]
@@ -56,14 +61,22 @@ diags(r::Rect)  =
     [Line(lx(r), ly(r), rx(r), ry(r)), Line(rx(r), ly(r), lx(r), ry(r))]
 cg(r::Rect) = div(diags(r)[1], 1//2)
 
-function Base.union(r1::Rect, r2::Rect)
-    l = min.(lb(r1), lb(r2))
-    r = max.(ru(r1), ru(r2))
-    return Rect(l[1], l[2], r[1], r[2])
-end
+Base.union(r1::Rect, r2::Rect) = 
+    Rect(min(lx(r1), lx(r2)), min(ly(r1), ly(r2)),
+         max(rx(r1), rx(r2)), max(ry(r1), ry(r2)))
 
 Base.union(r1::Rect, r2::Rect, y::Rect...) = Base.union(r1, union(r2, y...))
 Base.union(r::Rect) = r
+function Base.union(rs::AbstractVector{Rect{T}}) where T
+    lxv, lyv, rxv, ryv = typemax(T), typemax(T), typemin(T), typemin(T)
+    for r in rs
+        lxv > lx(r) && (lxv = lx(r))
+        lyv > ly(r) && (lyv = ly(r))
+        rxv < rx(r) && (rxv = rx(r))
+        ryv < ry(r) && (ryv = ry(r))
+    end
+    return Rect(lxv, lyv, rxv, ryv)
+end
 
 Base.intersect(r1::Rect, r2::Rect) = intersect(promote(r1, r2)...)
 
@@ -76,11 +89,14 @@ function Base.intersect(r1::Rect{T}, r2::Rect{T}) where T <: Number
 end
 
 Base.:(==)(r1::Rect{T}, r2::Rect{T}) where {T <: Number} =
-    all(abs.(r1.m - r2.m) .<= pcTol(T))
+    abs(r1.lxv - r2.lxv) <= pcTol(T) &&
+    abs(r1.lyv - r2.lyv) <= pcTol(T) &&
+    abs(r1.rxv - r2.rxv) <= pcTol(T) &&
+    abs(r1.ryv - r2.ryv) <= pcTol(T) 
 Base.:(==)(r1::Rect, r2::Rect) = ==(promote(r1, r2)...)
 
 inside(p::Tuple{T, T}, r::Rect{T}) where T <: Number =
-    all(r.m[:, 1] .<= p .<= r.m[:, 2])
+    r.lxv <= p[1] <= r.rxv && r.lyv <= p[2] <= r.ryv
 
 function inside(p::Tuple{T1, T2}, r::Rect{S}) where {T1 <: Number,
                                                      T2 <: Number,
@@ -94,8 +110,7 @@ inside(ri::Rect, ro::Rect) = intersect(ri, ro) == ri
 intersects(r1::Rect, r2::Rect) = intersect(r1, r2) !== nothing
 
 function intersects(r::Rect, l::Line)
-    ml = l.m
-    (inside((ml[1, 1], ml[2, 1]), r) || inside((ml[1, 2], ml[2, 2]), r)) &&
+    (inside((sx(l), sy(l)), r) || inside((ex(l), ey(l)), r)) &&
         return true
     for tl in lines(r)
         intersects(tl, l) && return true
@@ -117,7 +132,7 @@ ysort(r1::Rect, r2::Rect, reverse=false) =
     sortr(r1, r2, reverse=reverse, axis=2)
 
 sortr(r1::Rect, r2::Rect; reverse=false, axis=1) =
-    (!reverse && r1.m[axis, 1] > r2.m[axis, 1]) ? (r2, r1) : (r1, r2)
+    (!reverse && c_lo(r1, axis) > c_lo(r2, axis)) ? (r2, r1) : (r1, r2)
 
 has_x_overlap(r1::Rect, r2::Rect; isopen=false) =
     has_overlap(r1::Rect, r2::Rect, axis=1, isopen=isopen)
@@ -127,14 +142,12 @@ has_y_overlap(r1::Rect, r2::Rect; isopen=false) =
 function has_overlap(ri1::Rect{T1}, ri2::Rect{T2};
                      axis=1, isopen=false) where {T1, T2}
     r1, r2 = promote(ri1, ri2)
-    T = typeof(r1.m[1, 1])
+    T = typeof(r1.lxv)
     tol = isopen ? pcTol(T) : zero(T)
-    m = copy(r1.m)
-    m[axis, 1] += tol
-    m[axis, 2] -= tol
-    rt = Rect(m)
+    rt = axis == 1 ? Rect(lx(r1) + tol, ly(r1), rx(r1) - tol, ry(r1)) :
+                     Rect(lx(r1), ly(r1) + tol, rx(r1), ry(r1) - tol)
     r1, r2 = sortr(rt, r2, reverse=false, axis=axis)
-    return r1.m[axis, 1] <= r2.m[axis, 1] <= r1.m[axis, 2]
+    return c_lo(r1, axis) <= c_lo(r2, axis) <= c_hi(r1, axis)
 end
 
 """
@@ -185,10 +198,8 @@ function project(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T <: Number
 
     # Low segment
     if c_lo(lr, axis) + pcTol(T) < c_lo(hr, axis)
-        lm = copy(lr.m)
-        lm[axis, 1] = axl[1]
-        lm[axis, 2] = axl[2]
-        l = Rect{T}(lm)
+        l = axis == 1 ? Rect{T}(axl[1], ly(lr), axl[2], ry(lr)) :
+                        Rect{T}(lx(lr), axl[1], rx(lr), axl[2])
         low = !flip ? (l, nothing) : (nothing, l)
         # Non-overlap
         l == lr &&
@@ -198,7 +209,7 @@ function project(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T <: Number
     end
 
     #Overlap segment
-    om1, om2 = copy(r1.m), copy(r2.m)
+    om1, om2 = matrix(r1), matrix(r2)
     om1[axis, 1] = om2[axis, 1] = axl[2]
     om1[axis, 2] = om2[axis, 2] = axl[3]
 
@@ -208,7 +219,7 @@ function project(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T <: Number
     if -pcTol(T) <= c_hi(r1, axis) - c_hi(r2, axis) <= pcTol(T)
         high = nothing, nothing
     else
-        hm = c_hi(r1, axis) > c_hi(r2, axis) ? copy(r1.m) : copy(r2.m)
+        hm = c_hi(r1, axis) > c_hi(r2, axis) ? matrix(r1) : matrix(r2)
         hm[axis, 1] = axl[3]
         hm[axis, 2] = axl[4]
         high = c_hi(r1, axis) > c_hi(r2, axis) ? (Rect{T}(hm), nothing) :
@@ -237,12 +248,12 @@ function visible(r1::Rect{T}, r2::Rect{T}; axis::Int=1) where T <: Number
     ox == (nothing, nothing) && return nothing
     saxis = (axis == 1 ? 2 : 1)
     tr1, tr2 = sortr(ox[1], ox[2], axis=saxis)
-    m = copy(tr1.m)
-    m[saxis, 1] = tr1.m[saxis, 2]
-    m[saxis, 2] + pcTol(T) > tr2.m[saxis, 1] &&
+    m = matrix(tr1)
+    m[saxis, 1] = c_hi(tr1, saxis)
+    m[saxis, 2] + pcTol(T) > c_lo(tr2, saxis) &&
         return Line(lx(tr2), ly(tr2), lx(tr2), ry(tr2))
-    m[saxis, 2] = tr2.m[saxis, 1]
-    return Rect(m[1, 1], m[2, 1], m[1, 2], m[2, 2])
+    m[saxis, 2] = c_lo(tr2, saxis)
+    return Rect(m)
 end
 
 function get_overlapped_dist(l, h, f, a1, a2)
@@ -364,7 +375,7 @@ function Base.intersect(orm::OrderedRectMap{T1, V, D},
         tr = Rect(lx(r) + dl, ly(r) + dd, rx(r) + dr, ry(r) + du)
         rs, vs = intersect(orm, tr)
         length(rs) == 0 && return rs, vs
-        ttr = union(rs...)
+        ttr = union(rs)
         fstop(ttr) && return ors, ovs
         r == ttr && return rs, vs
         r, ors, ovs = ttr, rs, vs
@@ -378,19 +389,19 @@ function Base.intersect(orm::OrderedRectMap{T1, V, D},
     rect = convert(Rect{T1}, r)
     dir = D
     odir = dir == 1 ? 2 : 1
-    r1 = coord(rect, dir)
+    minv1, maxv1 = coord(rect, dir)
     if orm.reverseMax != zero(T1)
-        r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
+        minv1, maxv1 = (orm.reverseMax - maxv1), (orm.reverseMax - minv1)
     end
-    r2 = coord(rect, odir)
+    minv2, maxv2 = coord(rect, odir)
     tol = isopen ? pcTol(T1) : zero(T1)
-    imv1 = intersect(orm.data, Interval(r1[1] + tol, r1[2] - tol))
+    imv1 = intersect(orm.data, Interval(minv1 + tol, maxv1 - tol))
     retr = Vector{Rect{T1}}()
     retv = Vector{V}()
     nimv1 = iterate(imv1)
     while nimv1 !== nothing
         v1, iv1 = nimv1
-        imv2 = intersect(v1[2], Interval(r2[1] + tol, r2[2] - tol))
+        imv2 = intersect(v1[2], Interval(minv2 + tol, maxv2 - tol))
         nimv2 = iterate(imv2)
         while nimv2 !== nothing
             v2, iv2 = nimv2
@@ -413,16 +424,17 @@ function insert_rect!(orm::OrderedRectMap{T1, V, D},
     rect = convert(Rect{T1}, r)
     dir = D
     odir = dir == 1 ? 2 : 1
-    r1 = coord(rect, dir)
+    minv1, maxv1 = coord(rect, dir)
     if orm.reverseMax != zero(T1)
-        r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
+        minv1, maxv1 = (orm.reverseMax - maxv1), (orm.reverseMax - minv1)
     end
-    imv = get!(orm.data, Interval(r1[1], r1[2]), IntervalTree{T1, V}())
-    r2 = coord(rect, odir)
-    tv = get!(imv, Interval(r2[1], r2[2]), v)
+    imv = get!(orm.data, Interval(minv1, maxv1), IntervalTree{T1, V}())
+    minv2, maxv2 = coord(rect, odir)
+    itv2 = Interval(minv2, maxv2)
+    tv = get!(imv, itv2, v)
     tv === v && return nothing
-    tv = delete!(imv, Interval(r2[1], r2[2]))
-    imv[Interval(r2[1], r2[2])] = v
+    tv = delete!(imv, itv2)
+    imv[itv2] = v
     return tv
 end
 
@@ -431,15 +443,16 @@ function delete_rect!(orm::OrderedRectMap{T1, V, D},
     rect = convert(Rect{T1}, r)
     dir = D
     odir = dir == 1 ? 2 : 1
-    r1 = coord(rect, dir)
+    minv1, maxv1 = coord(rect, dir)
     if orm.reverseMax != zero(T1)
-        r1[1], r1[2] = (orm.reverseMax - r1[2]), (orm.reverseMax - r1[1])
+        minv1, maxv1 = (orm.reverseMax - maxv1), (orm.reverseMax - minv1)
     end
-    r2 = coord(rect, odir)
-    imv = get(orm.data, Interval(r1[1], r1[2]), IntervalTree{T1, V}())
+    itv1 = Interval(minv1, maxv1)
+    imv = get(orm.data, itv1, IntervalTree{T1, V}())
     isempty(imv) && return nothing
-    ret = delete!(imv, Interval(r2[1], r2[2]))
-    isempty(imv) && delete!(orm.data, Interval(r1[1], r1[2]))
+    minv2, maxv2 = coord(rect, odir)
+    ret = delete!(imv, Interval(minv2, maxv2))
+    isempty(imv) && delete!(orm.data, itv1)
     return ret === nothing ? ret : ret[2]
 end
 

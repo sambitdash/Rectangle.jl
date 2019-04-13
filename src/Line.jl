@@ -27,6 +27,7 @@ endof(l::Line, coord::Int) = coord == 1 ? ex(l) : ey(l)
 point(l::Line, id::Int=1) = id == 1 ? start(l) : endof(l)
 
 matrix(l::Line) = [sx(l) ex(l); sy(l) ey(l)]
+coord(l::Line, axis::Int) = axis == 1 ? (sx(l), ex(l)) : (sy(l), ey(l))
 
 xplot(l::Line) = [sx(l), ex(l)]
 yplot(l::Line) = [sy(l), ey(l)]

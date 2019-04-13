@@ -1,6 +1,8 @@
 using Rectangle
 using Test
 
+@test Any[] == detect_ambiguities(Base, Core, Rectangle)
+
 include("bsttest.jl")
 include("interval.jl")
 include("xytest.jl")

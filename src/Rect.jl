@@ -3,21 +3,21 @@ struct Rect{T <: Number}
     lyv::T
     rxv::T
     ryv::T
-    function Rect{T}(m::Matrix{T}) where T <: Number
-        @assert size(m) == (2, 2) "Invalid values"
-        return Rect{T}(m[1, 1], m[2, 1], m[1, 2], m[2, 2])
-    end
-
     Rect{T}(lxv::T, lyv::T, rxv::T, ryv::T) where T <: Number = 
-        new{T}(min(lxv, rxv), min(lyv, ryv), max(lxv, rxv), max(lyv, ryv))
+        new(min(lxv, rxv), min(lyv, ryv), max(lxv, rxv), max(lyv, ryv))
 
-    Rect{T}(r::Rect) where T <: Number =
-        Rect{T}(convert(T, r.lxv), convert(T, r.lyv),
-                convert(T, r.rxv), convert(T, r.ryv))
 end
 
-matrix(r::Rect) = [r.lxv r.rxv; r.lyv r.ryv]
+function Rect{T}(m::Matrix{T}) where T <: Number
+    @assert size(m) == (2, 2) "Invalid values"
+    return Rect{T}(m[1, 1], m[2, 1], m[1, 2], m[2, 2])
+end
+Rect{T}(r::Rect) where T <: Number =
+    Rect{T}(convert(T, r.lxv), convert(T, r.lyv),
+            convert(T, r.rxv), convert(T, r.ryv))
 Rect(m::Matrix{T}) where T <: Number = Rect{T}(m)
+
+matrix(r::Rect) = [r.lxv r.rxv; r.lyv r.ryv]
 
 function Rect(lx::Number, ly::Number, rx::Number, ry::Number)
     t = promote(lx, ly, rx, ry)
@@ -44,7 +44,7 @@ ry(r) = r.ryv
 xplot(r::Rect{T}) where T = T[lx(r), rx(r), rx(r), lx(r)]
 yplot(r::Rect{T}) where T = T[lx(r), lx(r), rx(r), rx(r)]
 
-coord(r, axis) = axis == 1 ? (r.lxv, r.rxv) : (r.lyv, r.ryv)
+coord(r::Rect, axis::Int) = axis == 1 ? (r.lxv, r.rxv) : (r.lyv, r.ryv)
 x(r) = coord(r, 1)
 y(r) = coord(r, 2)
 c_lo(r, axis)   = axis == 1 ? r.lxv : r.lyv

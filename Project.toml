@@ -1,6 +1,7 @@
 name = "Rectangle"
 uuid = "9a9db56c-8f71-5460-add5-cb450131785e"
 repo = "https://github.com/sambitdash/Rectangle.jl.git"
+version = "0.1.2"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"

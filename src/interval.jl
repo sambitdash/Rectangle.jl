@@ -7,6 +7,16 @@ struct Interval{K}
     end
 end
 
+function Base.getindex(itv::Interval, i::Int)
+    if i == 1
+        return itv.lo
+    elseif i == 2
+        return itv.hi
+    else
+        error("Invalid index for Interval")
+    end
+end
+
 Interval(l::K, h::K) where K = Interval{K}(l, h)
 
 Base.convert(::Type{Interval{K}}, t::Tuple{K, K}) where K = Interval(t...)
@@ -16,9 +26,9 @@ Base.promote_rule(::Type{Interval{T}}, ::Type{Interval{S}}) where {T, S} =
 
 Base.show(io::IO, i::Interval) = Base.print(io, "($(i.lo), $(i.hi))")
 
-function overlaps(i1::Interval{K}, i2::Interval{K}) where K
-    (i1, i2) = i1.lo < i2.lo ? (i1, i2) : (i2, i1)
-    return !(i2.lo < i1.lo) && !(i1.hi < i2.lo)
+function overlaps(i1::Union{Tuple{K, K}, Interval{K}}, i2::Interval{K}) where K
+    (i1, i2) = i1[1] < i2[1] ? (i1, i2) : (i2, i1)
+    return !(i2[1] < i1[1]) && !(i1[2] < i2[1])
 end
 
 Base.isless(i1::Interval{K1}, i2::Interval{K2}) where {K1, K2} = 
@@ -62,14 +72,14 @@ https://algs4.cs.princeton.edu/93intersection/
 
 @inline function _intersect(t::IntervalTree{K, V},
                             x::IntervalNode{K, V},
-                            i::Interval{K},
+                            i::Union{Tuple{K, K}, Interval{K}},
                             nodes::Vector{IntervalNode{K, V}}) where {K, V}
     isnil(t, x) && return false
-    lfound = !isnil(t, x.l) && !(x.l.k.submax < i.lo) &&
+    lfound = !isnil(t, x.l) && !(x.l.k.submax < i[1]) &&
         _intersect(t, x.l, i, nodes)
     found = overlaps(i, x.k.i)
     found && push!(nodes, x)
-    rfound = (lfound || isnil(t, x.l) || x.l.k.submax < i.lo) &&
+    rfound = (lfound || isnil(t, x.l) || x.l.k.submax < i[1]) &&
         _intersect(t, x.r, i, nodes)
     return lfound || found || rfound
 end
@@ -78,7 +88,21 @@ end
                                 i::Interval{K}) where {K, V}
     nodes = Vector{IntervalNode{K, V}}()
     _intersect(t, t.root, i, nodes)
-    return map(x-> x.k.i=>x.v, nodes)
+    retval = similar(nodes, Pair{Interval{K}, V})
+    for i = 1:length(nodes)
+        x = nodes[i]
+        retval[i] = x.k.i => x.v
+    end
+    return retval
+end
+
+@inline function Base.intersect(t::IntervalTree{K, V},
+                                i::Tuple{K, K}) where {K, V}
+    nodes = Vector{IntervalNode{K, V}}()
+    _intersect(t, t.root, i, nodes)
+    length(nodes) == 0 && return nothing
+    x = nodes[1]
+    return x.k.i => x.v
 end
 
 @inline function intersects(t::IntervalTree{K, V}, i::Interval{K}) where {K, V}

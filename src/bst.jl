@@ -19,12 +19,7 @@ abstract type AbstractBinaryTree{K, V} end
 abstract type AbstractNode{K, V} end
 abstract type AbstractBST{K, V} <: AbstractBinaryTree{K, V} end
 
-Base.isless(n1::T, n2::T) where {T <: AbstractNode} = Base.isless(_k(n1), _k(n2))
-Base.isless(n::AbstractNode{K, V}, k::K) where {K, V} = isless(_k(n), k)
-Base.isless(k::K, n::AbstractNode{K, V}) where {K, V} = isless(k, _k(n))
 # For abstract types compare with missing to remove ambiguity
-Base.isless(n::AbstractNode, ::Missing) = missing
-Base.isless(::Missing, n::AbstractNode) = missing
 
 _k(n::AbstractNode) = n.k
 _v(n::AbstractNode) = n.v
@@ -194,6 +189,13 @@ mutable struct BSTNode{K, V} <: AbstractNode{K, V}
     end
 end
 
+Base.isless(n1::BSTNode{K, V}, n2::BSTNode{K, V}) where {K, V} =
+    Base.isless(_k(n1), _k(n2))
+Base.isless(n::BSTNode{K, V}, k::K) where {K, V} = Base.isless(_k(n), k)
+Base.isless(k::K, n::BSTNode{K, V}) where {K, V} = Base.isless(k, _k(n))
+Base.isless(::BSTNode, ::Missing) = missing
+Base.isless(::Missing, ::BSTNode) = missing
+
 mutable struct BinarySearchTree{K, V} <: AbstractBST{K, V}
     root::BSTNode{K, V}
     nil::BSTNode{K, V}
@@ -320,6 +322,13 @@ mutable struct RBNode{K, V} <: AbstractNode{K, V}
         self.l = self.r = self.p = self
     end
 end
+
+Base.isless(n1::RBNode{K, V}, n2::RBNode{K, V}) where {K, V} =
+    Base.isless(_k(n1), _k(n2))
+Base.isless(n::RBNode{K, V}, k::K) where {K, V} = Base.isless(_k(n), k)
+Base.isless(k::K, n::RBNode{K, V}) where {K, V} = Base.isless(k, _k(n))
+Base.isless(::RBNode,  ::Missing) = missing
+Base.isless(::Missing, ::RBNode) = missing
 
 mutable struct RBTree{K, V} <: AbstractBST{K, V}
     root::RBNode{K, V}

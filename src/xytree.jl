@@ -13,14 +13,6 @@ mutable struct BinaryNode{K, V} <: AbstractNode{K, V}
     end
 end
 
-Base.isless(n1::BinaryNode{K, V}, n2::BinaryNode{K, V}) where {K, V} =
-    Base.isless(_k(n1), _k(n2))
-Base.isless(n::BinaryNode{K, V}, k::K) where {K, V} = Base.isless(_k(n), k)
-Base.isless(k::K, n::BinaryNode{K, V}) where {K, V} = Base.isless(k, _k(n))
-Base.isless(::BinaryNode, ::Missing) = missing
-Base.isless(::Missing, ::BinaryNode) = missing
-
-
 function divide_and_conquer(pred::Function, nil::BinaryNode{K, V}) where {K, V}
     predl, predr, k, v = pred()
     predl === nothing && predr === nothing && return (nil, 0)

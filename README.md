@@ -1,7 +1,6 @@
 # Rectangle
 
-[![Build Status](https://travis-ci.org/sambitdash/Rectangle.jl.svg?branch=master)](https://travis-ci.org/sambitdash/Rectangle.jl)
-[![Build status](https://ci.appveyor.com/api/projects/status/vt9i3v1mndie7nkw?svg=true)](https://ci.appveyor.com/project/sambitdash/rectangle-jl)
+[![GitHub Action](https://github.com/sambitdash/Rectangle.jl/actions/workflows/Build.yml/badge.svg)](https://github.com/sambitdash/Rectangle.jl/actions/workflows/Build.yml)
 [![codecov.io](http://codecov.io/github/sambitdash/Rectangle.jl/coverage.svg?branch=master)](http://codecov.io/github/sambitdash/Rectangle.jl?branch=master)
 
 This is a simplified rectangle library for simple tasks with 2-D rectangles.

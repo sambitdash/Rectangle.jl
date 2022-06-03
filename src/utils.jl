@@ -8,7 +8,7 @@ pcTol(::Type{T}) where {T <: Float32}       = T(1f-3)
 pcTol(::Type{T}) where {T <: Float64}       = T(1e-6) 
 
 isbelowtol(n::T, tol::T=pcTol(T)) where {T <: Number} = -tol <= n <= tol
-issimilar(n1::T1, n2::T2, tol=pcTol(promote_type(T1, T2))) where {T1 <: Number, T2 <: Number} = isbelowtol(n2 - n1, tol)
+issimilar(n1::T1, n2::T2, tol=pcTol(promote_type(T1, T2))) where {T1 <: Number, T2 <: Number} = isbelowtol(n1 - n2, tol)
 
 const notvoid = Base.notnothing
 const _nv = notvoid

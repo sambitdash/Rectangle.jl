@@ -242,3 +242,15 @@ end
     @test !vert_asc(Line(1f-4, 0, 0, 9), Line(0, 0, 0, 10))
 end
 
+@testset "iszero, isbelowtol, issimilar" begin
+    @test !iszero(1e-7)
+    @test !iszero(1f-4)
+    @test issimilar(1, 1.000001)
+    @test issimilar(0, 1e-6)
+    @test issimilar(0, -1e-6)
+    @test !issimilar(0, 1e-5)
+    @test issimilar(0f0, -1f-3)
+    @test !issimilar(0f0, -1e-5)
+    @test isbelowtol(1f-3)
+    @test isbelowtol(1e-6)    
+end

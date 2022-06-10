@@ -71,8 +71,8 @@ axis_parallel(l::Line{T}; dir::Int=1) where {T <: Number} =
 ```
 If the `Line` is horizontal or vertical.
 """
-isHorizontal(l::Line) = iszero(sy(l) - ey(l))
-isVertical(l::Line)   = iszero(sx(l) - ex(l))
+isHorizontal(l::Line) = issimilar(sy(l), ey(l))
+isVertical(l::Line)   = issimilar(sx(l), ex(l))
 
 """
 ```
@@ -96,12 +96,12 @@ function ratio(l::Line{T}, p::Tuple{T, T}) where {T <: Real}
     dv = (ex(l) - sx(l), ey(l) - sy(l))
     sl = start(l)
     dp = (p[1] - sl[1], p[2] - sl[2])
-    r, c = !iszero(dv[1]) ? (dp[1] / dv[1], 1) : (dp[2] / dv[2], 2)
+    r, c = !isbelowtol(dv[1]) ? (dp[1] / dv[1], 1) : (dp[2] / dv[2], 2)
     if c == 1
         tp = dv[2]*r + l.syv
-        iszero(tp - p[2]) && return r
+        issimilar(tp, p[2]) && return r
     else
-        iszero(dp[1]) && return r
+        isbelowtol(dp[1]) && return r
     end
     return nothing
 end
@@ -133,7 +133,7 @@ function intersects(l1::Line{T}, l2::Line{T}) where T <: Real
 
     for i = 1:2
         for j = 1:2 
-            if iszero(t[i, j])
+            if isbelowtol(t[i, j])
                 r = ratio(l[i, 1], point(l[i, 2], j))
                 r === nothing && continue
                 zero(T) <= notvoid(r) <= one(T) && return true
@@ -172,7 +172,7 @@ function merge_axis_aligned(alines::Vector{Line{T}},
     vl = Vector{Line{T}}()
     for i = 2:length(alines)
         l = alines[i]
-        if iszero(start(l, oaxis) - start(pl, oaxis), tol)
+        if issimilar(start(l, oaxis), start(pl, oaxis), tol)
             if order === :increasing && start(l, axis) - endof(pl, axis) <= tol
                 m[axis, 2] = max(endof(l, axis),  endof(pl, axis))
             elseif order === :decreasing &&
@@ -229,7 +229,7 @@ horiz_desc(l1::Line{T1},
                             tol::T=pcTol(T)) where T <: Number
     dy = sy(l1) - sy(l2)
     dy > tol && return true
-    return iszero(dy, tol) && sx(l1) - sx(l2) < -tol
+    return isbelowtol(dy, tol) && sx(l1) - sx(l2) < -tol
 end
 
 """
@@ -247,5 +247,5 @@ vert_asc(l1::Line{T1},
                           tol::T=pcTol(T)) where T <: Number
     dx = sx(l1) - sx(l2)
     dx < -tol && return true
-    return iszero(dx, tol) && ey(l1) - ey(l2) > tol
+    return isbelowtol(dx, tol) && ey(l1) - ey(l2) > tol
 end

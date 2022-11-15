@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         version: ['1.0', '1']
-        experimental: [false, false]
+        experimental: [false]
         os:
           - ubuntu-latest
         arch:

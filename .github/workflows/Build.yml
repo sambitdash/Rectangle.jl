@@ -25,6 +25,7 @@ jobs:
           - os: ubuntu-latest
             version: 'nightly'
             experimental: true
+            arch: x64
           # test macOS and Windows with latest Julia only
           - os: macOS-latest
             arch: x64
